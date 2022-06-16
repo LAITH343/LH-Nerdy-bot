@@ -18,23 +18,23 @@ dp = Dispatcher(bot)
 
 # create main menu 
 main_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-main_markup.add("عرض الواجبات")
-main_markup.add("ملازم")
-main_markup.add("الصور")
-main_markup.add("معلوماتي")
-main_markup.add("أغلاق")
+main_markup.add("عرض الواجبات 📃")
+main_markup.add("ملازم 📚")
+main_markup.add("الصور 📷")
+main_markup.add("معلوماتي ❓")
+main_markup.add("أغلاق ❌")
 
 # create main menu 
 new_user_main_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 new_user_main_markup.add("اختيار المرحلة")
-new_user_main_markup.add("أغلاق")
+new_user_main_markup.add("أغلاق ❌")
 
 # create pdf menu 
 pdf_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 pdf_markup.add("منطق رقمي")
 pdf_markup.add("برمجة سي بلس بلس 2")
 pdf_markup.add("اساسيات البرمجة")
-pdf_markup.add("الرجوع للقائمة الرئيسية")
+pdf_markup.add("الرجوع للقائمة الرئيسية 🏠")
 
 # create s exams menu 
 s_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
@@ -42,17 +42,17 @@ s_markup.add("جدول المرحلة الاولى")
 s_markup.add("جدول المرحلة الثانية")
 s_markup.add("جدول المرحلة الثالثة")
 s_markup.add("جدول المرحلة الرابعة")
-s_markup.add("الرجوع للقائمة الرئيسية")
+s_markup.add("الرجوع للقائمة الرئيسية 🏠")
 
 # create hw menu 
 hw_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-hw_markup.add("عرض واجبات الاسبوع")
-hw_markup.add("عرض واجبات يوم الاحد")
-hw_markup.add("عرض واجبات يوم الاثنين")
-hw_markup.add("عرض واجبات يوم الثلاثاء")
-hw_markup.add("عرض واجبات يوم الاربعاء")
-hw_markup.add("عرض واجبات يوم الخميس")
-hw_markup.add("الرجوع للقائمة الرئيسية")
+hw_markup.add("عرض واجبات الاسبوع 📖")
+hw_markup.add("عرض واجبات يوم الاحد 📝")
+hw_markup.add("عرض واجبات يوم الاثنين 📝")
+hw_markup.add("عرض واجبات يوم الثلاثاء 📝")
+hw_markup.add("عرض واجبات يوم الاربعاء 📝")
+hw_markup.add("عرض واجبات يوم الخميس 📝")
+hw_markup.add("الرجوع للقائمة الرئيسية 🏠")
 
 # create stages menu 
 stages_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
@@ -65,7 +65,7 @@ stages_markup.add("مرحلة رابعة")
 pic_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 pic_markup.add("شعار القسم")
 pic_markup.add("شعار الكلية")
-pic_markup.add("الرجوع للقائمة الرئيسية")
+pic_markup.add("الرجوع للقائمة الرئيسية 🏠")
 
 # set new user stage
 @dp.message_handler(lambda message: message.text == "مرحلة اولى")
@@ -126,7 +126,7 @@ async def start_message(message: types.Message):
         await bot.send_message(message.chat.id, "أهلا بك\nاختر المرحلة", reply_markup=new_user_main_markup)
 
 # create pdf menu 
-@dp.message_handler(lambda message: message.text == "ملازم")
+@dp.message_handler(lambda message: message.text == "ملازم 📚")
 async def pdf_message(message: types.Message):
     if check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
@@ -134,12 +134,12 @@ async def pdf_message(message: types.Message):
         await bot.send_message(message.chat.id, "اختر الملف من القائمة", reply_markup=pdf_markup)
 
 #create my info message
-@dp.message_handler(lambda message: message.text == "معلوماتي")
+@dp.message_handler(lambda message: message.text == "معلوماتي ❓")
 async def my_info_message(message: types.Message):
     await message.reply(myInfo(message))
 
 # create exit message handler
-@dp.message_handler(lambda message: message.text == "أغلاق")
+@dp.message_handler(lambda message: message.text == "أغلاق ❌")
 async def cancel_message(message: types.Message):
     cmarkup = types.ReplyKeyboardRemove()
     await message.reply("تم", reply_markup=cmarkup)
@@ -205,7 +205,7 @@ async def s_stage4(message: types.Message):
         await message.reply(answer("جدول المرحلة الرابعة"))
 
 # create back to main menu message handler
-@dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية")
+@dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية 🏠")
 async def back_to_main_menu(message: types.Message):
     if check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
@@ -254,7 +254,7 @@ async def set_hw(message: types.Message):
 
 
 # create hw messages menu 
-@dp.message_handler(lambda message: message.text == "عرض الواجبات")
+@dp.message_handler(lambda message: message.text == "عرض الواجبات 📃")
 async def view_hw(message: types.Message):
     if check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
@@ -263,7 +263,7 @@ async def view_hw(message: types.Message):
 
 
 # create hw sunday message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الاحد")
+@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الاحد 📝")
 async def view_hw(message: types.Message):
     if check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
@@ -275,7 +275,7 @@ async def view_hw(message: types.Message):
             await message.reply(get_hw(stage, "الاحد"))
 
 # create hw monday message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الاثنين")
+@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الاثنين 📝")
 async def view_hw(message: types.Message):
     if check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
@@ -287,7 +287,7 @@ async def view_hw(message: types.Message):
             await message.reply(get_hw(stage, "الاثنين"))
 
 # create hw tuesday message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الثلاثاء")
+@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الثلاثاء 📝")
 async def view_hw(message: types.Message):
     if check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
@@ -299,7 +299,7 @@ async def view_hw(message: types.Message):
             await message.reply(get_hw(stage, "الثلاثاء"))
 
 # create hw wednesday message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الاربعاء")
+@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الاربعاء 📝")
 async def view_hw(message: types.Message):
     if check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
@@ -311,7 +311,7 @@ async def view_hw(message: types.Message):
             await message.reply(get_hw(stage, "الاربعاء"))
 
 # create hw thursday message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الخميس")
+@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الخميس 📝")
 async def view_hw(message: types.Message):
     if check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
@@ -323,7 +323,7 @@ async def view_hw(message: types.Message):
             await message.reply(get_hw(stage, "الخميس"))
 
 # create hw all week message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات الاسبوع")
+@dp.message_handler(lambda message: message.text == "عرض واجبات الاسبوع 📖")
 async def view_hw(message: types.Message):
     if check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
@@ -348,7 +348,7 @@ async def user_managment(message: types.Message):
             await message.reply("حدث خطأ عند الحذف")
 
 # create photos menu stage
-@dp.message_handler(lambda message: message.text == "الصور")
+@dp.message_handler(lambda message: message.text == "الصور 📷")
 async def pics(message: types.Message):
     if check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
