@@ -125,7 +125,7 @@ async def echo(message: types.Message):
 @dp.message_handler(lambda message: message.text in ["start", "بدء", "/start"])
 async def send_welcome(message: types.Message):
     if check_user_exist(message.from_user.id) == True:
-        await bot.send_message(message.chat.id, "أهلا بك", reply_markup=main_markup)
+        await bot.send_message(message.chat.id, "أهلا بك في البوت", reply_markup=main_markup)
     else:
         await bot.send_message(message.chat.id, "أهلا بك\nاختر المرحلة", reply_markup=new_user_main_markup)
 
