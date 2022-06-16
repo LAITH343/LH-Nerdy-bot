@@ -1,7 +1,7 @@
 import configparser
 
 config = configparser.ConfigParser()
-config.read("hw.ini")
+config.read("storage/hw.ini")
 # keys = [
 #     "sunday",
 #     "monday",
@@ -11,14 +11,14 @@ config.read("hw.ini")
 # ]
 def get_hw(stage, day):
 	config = configparser.ConfigParser()
-	config.read("hw.ini")
+	config.read("storage/hw.ini")
 	value = config.get(stage, day)
 	return f" ---- {day} ----\n {value}"
 	config.close()
 
 def get_hw_allweek(stage):
 	config = configparser.ConfigParser()
-	config.read("hw.ini")
+	config.read("storage/hw.ini")
 	week = ""
 	keys = [
 	    "الاحد",
