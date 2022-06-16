@@ -1,2 +1,8 @@
 users:
-  admin: [708690017]
+  admin:
+  - 708690017
+  stage1:
+  - 708690017
+  stage2: []
+  stage3: []
+  stage4: []
