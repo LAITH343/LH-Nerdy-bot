@@ -18,6 +18,7 @@ admin_main_markup.add("الصور 📷")
 admin_main_markup.add("معلوماتي ❓")
 admin_main_markup.add("اضافة مشرف 💂")
 admin_main_markup.add("حذف مشرف 💂")
+admin_main_markup.add("أرسال اعلان للجميع 📢")
 admin_main_markup.add("أغلاق ❌")
 
 # create manager user main menu 
@@ -25,6 +26,7 @@ man_main_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True
 man_main_markup.add("عرض الواجبات 📃")
 man_main_markup.add("اضافة واجب 📝")
 man_main_markup.add("حذف واجب 📝")
+man_main_markup.add("أرسال اعلان 📢")
 man_main_markup.add("ملازم 📚")
 man_main_markup.add("الصور 📷")
 man_main_markup.add("معلوماتي ❓")

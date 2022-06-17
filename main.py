@@ -5,12 +5,12 @@ from sources.pdfs_links import links
 from cmds.myinfo import myInfo
 from cmds.hw_adder import add_hw
 from cmds.hw_getter import get_hw, get_hw_allweek
-from cmds.user_manager import check_user_stage, add_user, del_user, check_user_exist, check_admin, add_manager, del_manager, get_manager_stage
+from cmds.user_manager import check_user_stage, add_user, del_user, check_user_exist, check_admin, add_manager, del_manager, get_manager_stage, get_users_uid, get_users_uid_all
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from storage.classes import AddManager, DelManager, AddHW, DelHW
+from storage.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll
 from cmds.markup_manager import get_user_markup
 
 
@@ -486,6 +486,53 @@ async def process_age(message: types.Message, state: FSMContext):
         else:
             await bot.send_message(message.chat.id, "فشل حذف المشرف", reply_markup=get_user_markup(message.from_user.id))
     await state.finish()
+
+# send announcement for a stage by manager
+@dp.message_handler(lambda message: message.text == 'أرسال اعلان 📢')
+async def anno_managment(message: types.Message):
+    if get_manager_stage(message.from_user.id) == False:
+        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await Anno.m.set()
+        await message.reply("ارسل الرسالة التي تريد اعلانها", reply_markup=cancel_input_markup)
+
+# get the message from the manager and send it to the student
+@dp.message_handler(state=Anno.m)
+async def process_message(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['m'] = f"أعلان  📢 بواسطة: @{message.from_user.username}\n\n"
+        data['m'] += message.text
+        try:
+            for user in get_users_uid(message.from_user.id):
+                await bot.send_message(user, data['m'])
+            await message.reply("تم ارسال الاعلان بنجاح", reply_markup=get_user_markup(message.from_user.id))
+        except:
+            await message.reply("فشل ارسال الاعلان", reply_markup=get_user_markup(message.from_user.id))
+    await state.finish()
+
+# send announcement for all stages by admin
+@dp.message_handler(lambda message: message.text == 'أرسال اعلان للجميع 📢')
+async def anno_managment(message: types.Message):
+    if check_admin(message.from_user.id) == False:
+        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await AnnoAll.m.set()
+        await message.reply("ارسل الرسالى التي تريد اعلانها", reply_markup=cancel_input_markup)
+
+# get the message from the manager and send it to the student
+@dp.message_handler(state=AnnoAll.m)
+async def process_message(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['m'] = f"أعلان للجميع 📢 بواسطة: @{message.from_user.username}\n\n"
+        data['m'] += message.text
+        try:
+            for user in get_users_uid_all(message.from_user.id):
+                await bot.send_message(user, data['m'])
+            await message.reply("تم ارسال الاعلان بنجاح", reply_markup=get_user_markup(message.from_user.id))
+        except:
+            await message.reply("فشل ارسال الاعلان", reply_markup=get_user_markup(message.from_user.id))
+    await state.finish()
+
 
 # create unkown message handler
 @dp.message_handler()

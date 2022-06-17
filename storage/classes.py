@@ -18,3 +18,8 @@ class DelHW(StatesGroup):
 	day = State()
 	hw = State()
 
+class Anno(StatesGroup):
+	m = State()
+
+class AnnoAll(StatesGroup):
+	m = State()
