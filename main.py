@@ -5,29 +5,26 @@ from sources.pdfs_links import links
 from cmds.myinfo import myInfo
 from cmds.hw_adder import add_hw
 from cmds.hw_getter import get_hw, get_hw_allweek
-from cmds.user_manager import check_user_stage, add_user, del_user, check_user_exist
+from cmds.user_manager import check_user_stage, add_user, del_user, check_user_exist, check_admin, add_manager, del_manager, get_manager_stage
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher.filters import Text
+from storage.classes import AddManager, DelManager, AddHW, DelHW
+from cmds.markup_manager import get_user_markup
+
+
 
 API_TOKEN = '1294672480:AAGzpGRBS1ACOkeRftg_a_rTrFFiJTTsmo8'
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+# create memory storage for dipatcher
+storage = MemoryStorage()
 
 # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
-dp = Dispatcher(bot)
-
-# create main menu 
-main_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-main_markup.add("عرض الواجبات 📃")
-main_markup.add("ملازم 📚")
-main_markup.add("الصور 📷")
-main_markup.add("معلوماتي ❓")
-main_markup.add("أغلاق ❌")
-
-# create main menu 
-new_user_main_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-new_user_main_markup.add("اختيار المرحلة")
-new_user_main_markup.add("أغلاق ❌")
+dp = Dispatcher(bot, storage=storage)
 
 # create pdf menu 
 pdf_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
@@ -67,52 +64,74 @@ pic_markup.add("شعار القسم")
 pic_markup.add("شعار الكلية")
 pic_markup.add("الرجوع للقائمة الرئيسية 🏠")
 
+# create cancel input markup
+cancel_input_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+cancel_input_markup.add("الغاء الادخال")
+
+# create hw day input markup
+hw_day_input_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+hw_day_input_markup.add("الاحد")
+hw_day_input_markup.add("الاثنين")
+hw_day_input_markup.add("الثلاثاء")
+hw_day_input_markup.add("الاربعاء")
+hw_day_input_markup.add("الخميس")
+hw_day_input_markup.add("الغاء الادخال")
+
+# create select stage for add/delete manager input markup
+add_del_man_stage_input_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+add_del_man_stage_input_markup.add("stage1")
+add_del_man_stage_input_markup.add("stage2")
+add_del_man_stage_input_markup.add("stage3")
+add_del_man_stage_input_markup.add("stage4")
+add_del_man_stage_input_markup.add("الغاء الادخال")
+
+
 # set new user stage
 @dp.message_handler(lambda message: message.text == "مرحلة اولى")
 async def stage_select(message: types.Message):
     if check_user_exist(message.from_user.id) == True:
-        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=main_markup)
+        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
         if add_user("stage1", message.from_user.id) == True:
-            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=main_markup)
+            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
 
 @dp.message_handler(lambda message: message.text == "مرحلة ثانية")
 async def stage_select(message: types.Message):
     if check_user_exist(message.from_user.id) == True:
-        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=main_markup)
+        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
         if add_user("stage2", message.from_user.id) == True:
-            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=main_markup)
+            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
 
 @dp.message_handler(lambda message: message.text == "مرحلة ثالثة")
 async def stage_select(message: types.Message):
     if check_user_exist(message.from_user.id) == True:
-        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=main_markup)
+        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
         if add_user("stage3", message.from_user.id) == True:
-            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=main_markup)
+            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
 
 @dp.message_handler(lambda message: message.text == "مرحلة رابعة")
 async def stage_select(message: types.Message):
     if check_user_exist(message.from_user.id) == True:
-        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=main_markup)
+        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
         if add_user("stage4", message.from_user.id) == True:
-            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=main_markup)
+            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
     
-
+# create select stage menu 
 @dp.message_handler(lambda message: message.text == "اختيار المرحلة")
 async def stage_select_menu(message: types.Message):
     if check_user_exist(message.from_user.id) == True:
-        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=main_markup)
+        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
         await bot.send_message(message.chat.id, "اختر المرحلة\nملاحظة مهمة: يمكنك اختيار المرحلة لمرة واحدة فقط", reply_markup=stages_markup)
 
@@ -120,10 +139,7 @@ async def stage_select_menu(message: types.Message):
 # create start message/command handler
 @dp.message_handler(lambda message: message.text in ["start", "بدء", "/start"])
 async def start_message(message: types.Message):
-    if check_user_exist(message.from_user.id) == True:
-        await bot.send_message(message.chat.id, "أهلا بك في البوت", reply_markup=main_markup)
-    else:
-        await bot.send_message(message.chat.id, "أهلا بك\nاختر المرحلة", reply_markup=new_user_main_markup)
+    await bot.send_message(message.chat.id, "أهلا بك في البوت", reply_markup=get_user_markup(message.from_user.id))
 
 # create pdf menu 
 @dp.message_handler(lambda message: message.text == "ملازم 📚")
@@ -142,7 +158,7 @@ async def my_info_message(message: types.Message):
 @dp.message_handler(lambda message: message.text == "أغلاق ❌")
 async def cancel_message(message: types.Message):
     cmarkup = types.ReplyKeyboardRemove()
-    await message.reply("تم", reply_markup=cmarkup)
+    await message.reply("تم أغلاق القائمة\nلعرض القائمة من جديد ارسل بدء أو اضغط على /start", reply_markup=cmarkup)
 
 # create collage logo message handler
 @dp.message_handler(lambda message: message.text == "شعار الكلية")
@@ -210,7 +226,7 @@ async def back_to_main_menu(message: types.Message):
     if check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
-        await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=main_markup)
+        await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
 
 # create logic pdf message handler
 @dp.message_handler(lambda message: message.text == "منطق رقمي")
@@ -238,19 +254,6 @@ async def pdf_message(message: types.Message):
     else:
         await message.reply("جاري الرفع... ")
         await bot.send_document(message.chat.id, links("pf"))
-
-# create hw adder 
-@dp.message_handler(commands='addhw')
-async def set_hw(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        m = message.get_full_command()
-        values = m[1].split(" ")
-        if add_hw(values[0], values[1], values[2]) == True:
-            await message.reply("تم الاظافة بنجاح")
-        else:
-            await message.reply("حدث خطأ عند الادخال")
 
 
 # create hw messages menu 
@@ -337,8 +340,8 @@ async def view_hw(message: types.Message):
 # create delete user command handler
 @dp.message_handler(commands='deluser')
 async def user_managment(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
+    if check_admin(message.from_user.id) == False:
+        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
     else:
         m = message.get_full_command()
         values = m[1].split(" ")
@@ -355,6 +358,134 @@ async def pics(message: types.Message):
     else:
         await bot.send_message(message.chat.id, "اختر من الصور", reply_markup=pic_markup)
 
+
+# create input canceler 
+@dp.message_handler(state='*', commands='الغاء الادخال')
+@dp.message_handler(Text(equals='الغاء الادخال', ignore_case=True), state='*')
+async def cancel_handler(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state is None:
+        return
+
+    logging.info('Cancelling state %r', current_state)
+    # Cancel state and inform user about it
+    await state.finish()
+    await message.reply('تم الغاء الادخال', reply_markup=get_user_markup(message.from_user.id))
+
+
+# create add HW command handler
+@dp.message_handler(lambda message: message.text == 'اضافة واجب 📝')
+async def HW_managment(message: types.Message):
+    if get_manager_stage(message.from_user.id) == False:
+        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await AddHW.day.set()
+        await message.reply("اختر اليوم", reply_markup=hw_day_input_markup)
+
+# get the day from the user
+@dp.message_handler(state=AddHW.day)
+async def process_day(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['day'] = message.text
+
+    await AddHW.next()
+    await message.reply("ارسل الواجب", reply_markup=cancel_input_markup)
+
+# get hw message
+@dp.message_handler(state=AddHW.hw)
+async def process_age(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['hw'] = message.text
+        stage = get_manager_stage(message.from_user.id)
+        if stage == False:
+            await message.reply("فشل اضاف الواجب المستخدم غير مسؤول على مرحلة", reply_markup=get_user_markup(message.from_user.id))
+        else:
+            if add_hw(stage, data['day'], data['hw']) == True:
+                await message.reply("تم الاضافة بنجاح", reply_markup=get_user_markup(message.from_user.id))
+            else:
+                await bot.send_message(message.chat.id, "فشل اضافة الواجب", reply_markup=get_user_markup(message.from_user.id))
+    await state.finish()
+
+# create delete HW command handler
+@dp.message_handler(lambda message: message.text == 'حذف واجب 📝')
+async def HW_managment(message: types.Message):
+    if get_manager_stage(message.from_user.id) == False:
+        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await DelHW.day.set()
+        await message.reply("اختر اليوم", reply_markup=hw_day_input_markup)
+
+# get the day from the user
+@dp.message_handler(state=DelHW.day)
+async def process_day(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['day'] = message.text
+        stage = get_manager_stage(message.from_user.id)
+        if add_hw(stage, data['day'], "لا شيء") == True:
+            await message.reply("تم حذف الواجب", reply_markup=get_user_markup(message.from_user.id))
+        else:
+            await bot.send_message(message.chat.id, "فشل حذف الواجب", reply_markup=get_user_markup(message.from_user.id))
+    await state.finish()
+
+# create add manager command handler
+@dp.message_handler(lambda message: message.text == 'اضافة مشرف 💂')
+async def user_managment(message: types.Message):
+    if check_admin(message.from_user.id) == False:
+        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await AddManager.stage.set()
+        await message.reply("اختر المرحلة", reply_markup=add_del_man_stage_input_markup)
+
+# get the stage from the user
+@dp.message_handler(state=AddManager.stage)
+async def process_name(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['stage'] = message.text
+
+    await AddManager.next()
+    await message.reply("ارسل الID الخاص بالمستخدم", reply_markup=cancel_input_markup)
+
+# get user id form the user and end data entry
+@dp.message_handler(lambda message: message.text.isdigit(), state=AddManager.uid)
+async def process_age(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['uid'] = int(message.text)
+        if add_manager(data['stage'], data['uid']) == True:
+            await message.reply("تم الاضافة بنجاح", reply_markup=get_user_markup(message.from_user.id))
+        else:
+            await bot.send_message(message.chat.id, "فشل اضافة المشرف", reply_markup=get_user_markup(message.from_user.id))
+    await state.finish()
+
+
+
+# create delete manager command handler
+@dp.message_handler(lambda message: message.text == 'حذف مشرف 💂')
+async def user_managment(message: types.Message):
+    if check_admin(message.from_user.id) == False:
+        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await DelManager.stage.set()
+        await message.reply("اختر المرحلة", reply_markup=add_del_man_stage_input_markup)
+
+# get the stage from the user
+@dp.message_handler(state=DelManager.stage)
+async def process_name(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['stage'] = message.text
+
+    await DelManager.next()
+    await message.reply("ارسل الID الخاص بالمستخدم", reply_markup=cancel_input_markup)
+
+# get user id form the user and end data entry
+@dp.message_handler(lambda message: message.text.isdigit(), state=DelManager.uid)
+async def process_age(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['uid'] = int(message.text)
+        if del_manager(data['stage'], data['uid']) == True:
+            await message.reply("تم الحذف بنجاح", reply_markup=get_user_markup(message.from_user.id))
+        else:
+            await bot.send_message(message.chat.id, "فشل حذف المشرف", reply_markup=get_user_markup(message.from_user.id))
+    await state.finish()
 
 # create unkown message handler
 @dp.message_handler()
