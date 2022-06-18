@@ -5,7 +5,7 @@ from sources.pdfs_links import links
 from cmds.myinfo import myInfo
 from cmds.hw_adder import add_hw
 from cmds.hw_getter import get_hw, get_hw_allweek
-from cmds.user_manager import check_user_stage, add_user, del_user, check_user_exist, check_admin, add_manager, del_manager, get_manager_stage, get_users_uid, get_users_uid_all
+from cmds.user_manager import check_user_stage, add_user, del_user, check_user_exist, check_admin, add_manager, del_manager, get_manager_stage, get_users_uid, get_users_uid_all, get_all_users_username
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -92,7 +92,7 @@ async def stage_select(message: types.Message):
     if check_user_exist(message.from_user.id) == True:
         await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
-        if add_user("stage1", message.from_user.id) == True:
+        if add_user("stage1", message.from_user.id, message.from_user.username) == True:
             await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
@@ -102,7 +102,7 @@ async def stage_select(message: types.Message):
     if check_user_exist(message.from_user.id) == True:
         await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
-        if add_user("stage2", message.from_user.id) == True:
+        if add_user("stage2", message.from_user.id, message.from_user.username) == True:
             await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
@@ -112,7 +112,7 @@ async def stage_select(message: types.Message):
     if check_user_exist(message.from_user.id) == True:
         await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
-        if add_user("stage3", message.from_user.id) == True:
+        if add_user("stage3", message.from_user.id, message.from_user.username) == True:
             await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
@@ -122,7 +122,7 @@ async def stage_select(message: types.Message):
     if check_user_exist(message.from_user.id) == True:
         await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
-        if add_user("stage4", message.from_user.id) == True:
+        if add_user("stage4", message.from_user.id, message.from_user.username) == True:
             await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
@@ -533,6 +533,18 @@ async def process_message(message: types.Message, state: FSMContext):
             await message.reply("فشل ارسال الاعلان", reply_markup=get_user_markup(message.from_user.id))
     await state.finish()
 
+# create list of user id and username for all users 
+@dp.message_handler(lambda message: message.text == "عرض جميع المستخدمين 📋")
+async def make_list(message: types.Message):
+    if check_admin(message.from_user.id) != True:
+        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        uids = get_users_uid_all(message.from_user.id)
+        usernames = get_all_users_username()
+        message_text = ""
+        for (uid, username) in zip(uids, usernames):
+            message_text += f"أيدي المستخدم {uid}   يوزر المستخدم @{username}\n"
+        await message.reply(message_text, reply_markup=get_user_markup(message.from_user.id))
 
 # create unkown message handler
 @dp.message_handler()

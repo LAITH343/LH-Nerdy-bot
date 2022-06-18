@@ -19,6 +19,7 @@ admin_main_markup.add("معلوماتي ❓")
 admin_main_markup.add("اضافة مشرف 💂")
 admin_main_markup.add("حذف مشرف 💂")
 admin_main_markup.add("أرسال اعلان للجميع 📢")
+admin_main_markup.add("عرض جميع المستخدمين 📋")
 admin_main_markup.add("أغلاق ❌")
 
 # create manager user main menu 

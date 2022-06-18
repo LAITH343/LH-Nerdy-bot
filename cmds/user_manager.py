@@ -81,10 +81,11 @@ def get_manager_stage(uid):
 
 
 
-def add_user(stage, uid):
+def add_user(stage, uid, username):
 	with open('storage/users_info.yml', 'r') as ucfg:
 		cfg = yaml.safe_load(ucfg)
 		cfg['users'][stage].append(uid)
+		cfg['usernames'][stage].append(username)
 	if cfg:
 		with open('storage/users_info.yml', 'w') as ucfg:
 			yaml.safe_dump(cfg, ucfg)
@@ -156,5 +157,25 @@ def get_users_uid_all(uid):
 		ul.append(i)
 	for i in stage4:
 		ul.append(i)
-	ul.remove(uid)
+	# ul.remove(uid)
 	return ul
+
+def get_all_users_username():
+	with open('storage/users_info.yml', 'r') as ucfg:
+		cfg = yaml.safe_load(ucfg)
+		ustage1 = cfg['usernames']['stage1']
+		ustage2 = cfg['usernames']['stage2']
+		ustage3 = cfg['usernames']['stage3']
+		ustage4 = cfg['usernames']['stage4']
+	usernames = []
+	
+	for u in ustage1:
+		usernames.append(u)
+	for u in ustage2:
+		usernames.append(u)
+	for u in ustage3:
+		usernames.append(u)
+	for u in ustage4:
+		usernames.append(u)
+	# ul.remove(uid)
+	return usernames
