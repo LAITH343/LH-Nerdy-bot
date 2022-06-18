@@ -26,7 +26,7 @@ storage = MemoryStorage()
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=storage)
 
-# create pdf menu 
+# create pdf files menu
 pdf_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 pdf_markup.add("منطق رقمي")
 pdf_markup.add("برمجة سي بلس بلس 2")
