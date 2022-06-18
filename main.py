@@ -10,7 +10,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from storage.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll
 from cmds.markup_manager import get_user_markup
 
 
