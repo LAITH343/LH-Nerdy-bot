@@ -12,10 +12,13 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
 from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup
+import os
+from dotenv import load_dotenv
+# load .env file
+load_dotenv()
 
-
-
-API_TOKEN = '1294672480:AAGzpGRBS1ACOkeRftg_a_rTrFFiJTTsmo8'
+# import bot token from .env file
+bot_token = os.getenv('BOT_TOKEN')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +26,7 @@ logging.basicConfig(level=logging.INFO)
 storage = MemoryStorage()
 
 # Initialize bot and dispatcher
-bot = Bot(token=API_TOKEN)
+bot = Bot(token=bot_token)
 dp = Dispatcher(bot, storage=storage)
 
 # create pdf files menu
