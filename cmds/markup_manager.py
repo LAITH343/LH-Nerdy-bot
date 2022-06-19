@@ -8,10 +8,10 @@ def get_user_markup(uid):
 		main_markup.add("ملازم 📚")
 		main_markup.add("الصور 📷")
 		main_markup.add("معلوماتي ❓")
-	if get_manager_stage(uid) != False:
-		main_markup.add("عرض صلاحيات المشرف 💂")
-	if check_admin(uid) == True:
-		main_markup.add("عرض صلاحيات الادمن 👮")
+		if get_manager_stage(uid) != False:
+			main_markup.add("عرض صلاحيات المشرف 💂")
+		if check_admin(uid) == True:
+			main_markup.add("عرض صلاحيات الادمن 👮")
 	else:
 		main_markup.add("اختيار المرحلة")
 	main_markup.add("أغلاق ❌")

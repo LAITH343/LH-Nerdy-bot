@@ -23,3 +23,6 @@ class Anno(StatesGroup):
 
 class AnnoAll(StatesGroup):
 	m = State()
+
+class Viewhw(StatesGroup):
+	day = State()

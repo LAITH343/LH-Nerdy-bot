@@ -10,7 +10,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup
 
 
@@ -43,12 +43,8 @@ s_markup.add("الرجوع للقائمة الرئيسية 🏠")
 
 # create hw menu 
 hw_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+hw_markup.add("اختيار يوم 📋")
 hw_markup.add("عرض واجبات الاسبوع 📖")
-hw_markup.add("عرض واجبات يوم الاحد 📝")
-hw_markup.add("عرض واجبات يوم الاثنين 📝")
-hw_markup.add("عرض واجبات يوم الثلاثاء 📝")
-hw_markup.add("عرض واجبات يوم الاربعاء 📝")
-hw_markup.add("عرض واجبات يوم الخميس 📝")
 hw_markup.add("الرجوع للقائمة الرئيسية 🏠")
 
 # create stages menu 
@@ -265,66 +261,6 @@ async def view_hw(message: types.Message):
         await bot.send_message(message.chat.id, "اختر اليوم من القائمة", reply_markup=hw_markup)
 
 
-# create hw sunday message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الاحد 📝")
-async def view_hw(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        stage = check_user_stage(message.from_user.id)
-        if stage == False:
-            await message.reply("انت لا تنتمي الى مرحلة")
-        else:
-            await message.reply(get_hw(stage, "الاحد"))
-
-# create hw monday message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الاثنين 📝")
-async def view_hw(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        stage = check_user_stage(message.from_user.id)
-        if stage == False:
-            await message.reply("انت لا تنتمي الى مرحلة")
-        else:
-            await message.reply(get_hw(stage, "الاثنين"))
-
-# create hw tuesday message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الثلاثاء 📝")
-async def view_hw(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        stage = check_user_stage(message.from_user.id)
-        if stage == False:
-            await message.reply("انت لا تنتمي الى مرحلة")
-        else:
-            await message.reply(get_hw(stage, "الثلاثاء"))
-
-# create hw wednesday message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الاربعاء 📝")
-async def view_hw(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        stage = check_user_stage(message.from_user.id)
-        if stage == False:
-            await message.reply("انت لا تنتمي الى مرحلة")
-        else:
-            await message.reply(get_hw(stage, "الاربعاء"))
-
-# create hw thursday message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات يوم الخميس 📝")
-async def view_hw(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        stage = check_user_stage(message.from_user.id)
-        if stage == False:
-            await message.reply("انت لا تنتمي الى مرحلة")
-        else:
-            await message.reply(get_hw(stage, "الخميس"))
-
 # create hw all week message handler
 @dp.message_handler(lambda message: message.text == "عرض واجبات الاسبوع 📖")
 async def view_hw(message: types.Message):
@@ -391,19 +327,39 @@ async def process_day(message: types.Message, state: FSMContext):
     await AddHW.next()
     await message.reply("ارسل الواجب", reply_markup=cancel_input_markup)
 
-# get hw message
+# get add hw message handler
 @dp.message_handler(state=AddHW.hw)
 async def process_age(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['hw'] = message.text
-        stage = get_manager_stage(message.from_user.id)
-        if stage == False:
-            await message.reply("فشل اضاف الواجب المستخدم غير مسؤول على مرحلة", reply_markup=get_user_markup(message.from_user.id))
-        else:
-            if add_hw(stage, data['day'], data['hw']) == True:
+        try:
+            if add_hw(get_manager_stage(message.from_user.id), data['day'], data['hw']) == True:
                 await message.reply("تم الاضافة بنجاح", reply_markup=get_user_markup(message.from_user.id))
-            else:
-                await bot.send_message(message.chat.id, "فشل اضافة الواجب", reply_markup=get_user_markup(message.from_user.id))
+        except:
+            await bot.send_message(message.chat.id, "حدث خطأ ما\nيرجى التحقق من المدخلات أو اذا كان لديك الصلاحيات لتنفيذ الاجراء", reply_markup=get_user_markup(message.from_user.id))
+    await state.finish()
+
+
+# create view hw message handler
+@dp.message_handler(lambda message: message.text == "اختيار يوم 📋")
+async def select_hw(message: types.Message):
+    if check_user_exist(message.from_user.id) == False:
+        await message.reply("يجب اختيار المرحلة اولا!", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await Viewhw.day.set()
+        await bot.send_message(message.chat.id, "اختر اليوم ", reply_markup=hw_day_input_markup)
+
+@dp.message_handler(state=Viewhw.day)
+async def view_by_day(message: types.Message, state=Viewhw):
+    async with state.proxy() as data:
+        data['day'] = message.text
+        if check_user_exist(message.from_user.id) == False:
+            await bot.send_message(message.chat.id, "يجب اختيار المرحلة اولا!", reply_markup=get_user_markup(message.from_user.id))
+        else:
+            try:
+                await message.reply(get_hw(check_user_stage(message.from_user.id), data['day']), reply_markup=get_user_markup(message.from_user.id))
+            except:
+                await message.reply("فشل عرض الواجب!")
     await state.finish()
 
 # create delete HW command handler
