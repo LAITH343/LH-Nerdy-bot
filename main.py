@@ -13,12 +13,17 @@ from aiogram.dispatcher.filters import Text
 from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup
 import os
-from dotenv import load_dotenv
-# load .env file
-load_dotenv()
 
-# import bot token from .env file
-bot_token = os.getenv('BOT_TOKEN')
+# handle heroku dotenv not found and fails to get the token
+try:
+    from dotenv import load_dotenv
+    # load .env file
+    load_dotenv()
+    # import bot token from .env file
+    bot_token = os.getenv('BOT_TOKEN')
+except:
+    bot_token = os.environ.get('BOT_TOKEN')
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
