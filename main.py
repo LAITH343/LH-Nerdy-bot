@@ -11,7 +11,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
 from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll
-from cmds.markup_manager import get_user_markup
+from cmds.markup_manager import get_user_markup, manager_markup, admin_markup
 
 
 
@@ -545,6 +545,23 @@ async def make_list(message: types.Message):
         for (uid, username) in zip(uids, usernames):
             message_text += f"أيدي المستخدم {uid}   يوزر المستخدم @{username}\n"
         await message.reply(message_text, reply_markup=get_user_markup(message.from_user.id))
+
+# create admin permissions list getter 
+@dp.message_handler(lambda message: message.text == "عرض صلاحيات الادمن 👮")
+async def view_admin_permissions(message: types.Message):
+    if check_admin(message.from_user.id) == True:
+        await message.reply("تم عرض صلاحيات الادمن", reply_markup=admin_markup())
+    else:
+        await message.reply("ليس لديك الصلاحية لعرض هذه القائمة", reply_markup=get_user_markup(message.from_user.id))
+
+
+# create manager premissions list getter 
+@dp.message_handler(lambda message: message.text == "عرض صلاحيات المشرف 💂")
+async def view_man_permissions(message: types.Message):
+    if get_manager_stage(message.from_user.id) != False:
+        await message.reply("تم عرض صلاحيات المشرف", reply_markup=manager_markup())
+    else:
+        await message.reply("ليس لديك الصلاحية لعرض هذه القائمة", reply_markup=get_user_markup(message.from_user.id))
 
 # create unkown message handler
 @dp.message_handler()
