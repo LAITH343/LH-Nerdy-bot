@@ -15,9 +15,9 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup
-from cmds.pdf_manager import merge_pdfs
+from cmds.pdf_manager import merge_pdfs, images_to_pdf
 
 # handle heroku dotenv not found and fails to get the token
 try:
@@ -572,7 +572,7 @@ async def pdf_getter(message: types.Message, state: FSMContext):
 
 # create merge pdf command handler
 @dp.message_handler(lambda message: message.text == "دمج" ,state=MergePdf.folder)
-async def cancel_handler(message: types.Message, state: FSMContext):
+async def merge_handler(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         f = open((data['folder'] + "/files"), 'r')
         file = f.read()
@@ -585,6 +585,54 @@ async def cancel_handler(message: types.Message, state: FSMContext):
         os.system(f"rm -rf {data['folder']}")
     await state.finish()
 
+# create images to pdf message handler
+@dp.message_handler(lambda message: message.text == "تحويل الصور الى pdf")
+async def merge(message: types.Message, state: FSMContext):
+    if check_user_exist(message.from_user.id) == False:
+        await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await MergeImages.folder.set()
+        randfile = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
+        os.system(f"mkdir cache/{randfile}")
+        async with state.proxy() as data:
+            data['folder'] = f"cache/{randfile}"
+        await message.reply("ارسل الصور ثم ارسل دمج", reply_markup=merge_markup)
+
+# create cancel images merge to pdf message handler
+@dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergeImages.folder)
+async def merge(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        os.system(f"rm -rf {data['folder']}")
+        await message.reply("تم الغاء الدمج وحذف الملفات", reply_markup=get_user_markup(message.from_user.id))
+    await state.finish()
+
+# create pdfs getter
+@dp.message_handler(state=MergeImages.folder, content_types=ContentTypes.DOCUMENT)
+async def pdf_getter(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        if document := message.document:
+            await document.download(
+                destination_file=f"{data['folder']}/{document.file_name}",
+            )
+            await message.reply("تم تنزيل الملف")
+            with open((data['folder']+"/files"), 'a+') as fls:
+                fls.write(f"{data['folder']}/{document.file_name};")
+                fls.close()
+
+# create merge pdf command handler
+@dp.message_handler(lambda message: message.text == "دمج" ,state=MergeImages.folder)
+async def cancel_handler(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        f = open((data['folder'] + "/files"), 'r')
+        file = f.read()
+        pdfs = file.split(";")
+        pdfs.remove('')
+        try:
+            await bot.send_document(message.chat.id, document=open(images_to_pdf(pdfs, data['folder']), 'rb'), reply_markup=get_user_markup(message.from_user.id))
+        except:
+            await message.reply("فشل دمج الملفات")
+        os.system(f"rm -rf {data['folder']}")
+    await state.finish()
 
 # create unkown message handler
 @dp.message_handler()

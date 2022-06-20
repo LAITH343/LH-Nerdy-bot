@@ -12,15 +12,15 @@ def merge_pdfs(pdfs: list, temp_path):
     pdf_merger.close()
     return pdf_output
 
-def images_to_pdf(images: list):
+def images_to_pdf(images: list, temp_path):
     if len(images) == 1:
-        pdf_output = f"{path.splitext(images[0])[0]}.pdf"
+        pdf_output = f"{temp_path}/{path.splitext(images[0])[0]}.pdf"
         pic = Image.open(images[0]).convert('RGB')
         pic.save(pdf_output)
         return pdf_output
     else:
         images_to_save = []
-        pdf_output = "images_to_pdf.pdf"
+        pdf_output = f"{temp_path}/images_to_p.pdf"
         for i in images:
             pic = Image.open(i).convert('RGB')
             images_to_save.append(pic)
