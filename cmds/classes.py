@@ -26,3 +26,6 @@ class AnnoAll(StatesGroup):
 
 class Viewhw(StatesGroup):
 	day = State()
+
+class MergePdf(StatesGroup):
+	folder = State()
