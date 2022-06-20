@@ -2,5 +2,5 @@ sources/__pycache__/
 cmds/__pycache__/
 __pycache__/
 .env
-cache/
+cache/*
 .idea/
