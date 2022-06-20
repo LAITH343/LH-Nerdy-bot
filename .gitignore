@@ -4,3 +4,4 @@ __pycache__/
 .env
 cache/*
 .idea/
+!cache/.gitkeep
