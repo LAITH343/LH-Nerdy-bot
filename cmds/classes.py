@@ -29,3 +29,6 @@ class Viewhw(StatesGroup):
 
 class MergePdf(StatesGroup):
 	folder = State()
+
+class MergeImages(StatesGroup):
+	folder = State()
