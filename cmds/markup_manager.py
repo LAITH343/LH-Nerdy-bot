@@ -36,3 +36,9 @@ def manager_markup():
 	man_markup.add("أرسال اعلان 📢")
 	man_markup.add("الرجوع للقائمة الرئيسية 🏠")
 	return man_markup
+
+def custom_markup(options: list):
+	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+	for option in options:
+		custom.add(option)
+	return custom

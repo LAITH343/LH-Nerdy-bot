@@ -4,7 +4,6 @@ import string
 import random
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ContentTypes
-
 from sources.s import answer
 from sources.pdfs_links import links
 from cmds.myinfo import myInfo
@@ -16,7 +15,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
 from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages
-from cmds.markup_manager import get_user_markup, manager_markup, admin_markup
+from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, custom_markup
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
 
 # handle heroku dotenv not found and fails to get the token
@@ -40,68 +39,34 @@ bot = Bot(token=bot_token)
 dp = Dispatcher(bot, storage=storage)
 
 # create pdf files menu
-pdf_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-pdf_markup.add("منطق رقمي")
-pdf_markup.add("برمجة سي بلس بلس 2")
-pdf_markup.add("اساسيات البرمجة")
-pdf_markup.add("الرجوع للقائمة الرئيسية 🏠")
+pdf_markup = custom_markup(["منطق رقمي", "برمجة سي بلس بلس 2", "اساسيات البرمجة", "الرجوع للقائمة الرئيسية 🏠"])
 
 # create s exams menu 
-s_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-s_markup.add("جدول المرحلة الاولى")
-s_markup.add("جدول المرحلة الثانية")
-s_markup.add("جدول المرحلة الثالثة")
-s_markup.add("جدول المرحلة الرابعة")
-s_markup.add("الرجوع للقائمة الرئيسية 🏠")
+s_markup = custom_markup(["جدول المرحلة الاولى", "جدول المرحلة الثانية", "جدول المرحلة الثالثة", "جدول المرحلة الرابعة", "الرجوع للقائمة الرئيسية 🏠"])
 
 # create hw menu 
-hw_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-hw_markup.add("اختيار يوم 📋")
-hw_markup.add("عرض واجبات الاسبوع 📖")
-hw_markup.add("الرجوع للقائمة الرئيسية 🏠")
+hw_markup = custom_markup(["اختيار يوم 📋","عرض واجبات الاسبوع 📖","الرجوع للقائمة الرئيسية 🏠"])
 
 # create stages menu 
-stages_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-stages_markup.add("مرحلة اولى")
-stages_markup.add("مرحلة ثانية")
-stages_markup.add("مرحلة ثالثة")
-stages_markup.add("مرحلة رابعة")
+stages_markup = custom_markup(["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة"])
 
 # create photos menu 
-pic_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-pic_markup.add("شعار القسم")
-pic_markup.add("شعار الكلية")
-pic_markup.add("الرجوع للقائمة الرئيسية 🏠")
+pic_markup = custom_markup(["شعار القسم","شعار الكلية","الرجوع للقائمة الرئيسية 🏠"])
 
 # create cancel input markup
-cancel_input_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-cancel_input_markup.add("الغاء الادخال")
+cancel_input_markup = custom_markup(["الغاء الادخال"])
 
 # create hw day input markup
-hw_day_input_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-hw_day_input_markup.add("الاحد")
-hw_day_input_markup.add("الاثنين")
-hw_day_input_markup.add("الثلاثاء")
-hw_day_input_markup.add("الاربعاء")
-hw_day_input_markup.add("الخميس")
-hw_day_input_markup.add("الغاء الادخال")
+hw_day_input_markup = custom_markup(["الاحد","الاثنين","الثلاثاء","الاربعاء","الخميس","الغاء الادخال"])
 
 # create select stage for add/delete manager input markup
-add_del_man_stage_input_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-add_del_man_stage_input_markup.add("stage1")
-add_del_man_stage_input_markup.add("stage2")
-add_del_man_stage_input_markup.add("stage3")
-add_del_man_stage_input_markup.add("stage4")
-add_del_man_stage_input_markup.add("الغاء الادخال")
+add_del_man_stage_input_markup = custom_markup(["stage1","stage2","stage3","stage4","الغاء الادخال"])
 
 # create merge markup
-merge_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-merge_markup.add("دمج")
-merge_markup.add("الغاء الدمج")
+merge_markup = custom_markup(["دمج","الغاء الدمج"])
 
 # create compress markup
-compress_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-compress_markup.add("الغاء الضغط")
+compress_markup = custom_markup(["الغاء الضغط"])
 
 # set new user stage
 @dp.message_handler(lambda message: message.text == "مرحلة اولى")
@@ -553,7 +518,7 @@ async def merge(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             data['folder'] = f"cache/{randfile}"
         await MergePdf.next()
-        await message.reply("ماذا تريد ان تسمي الملف؟", reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True).add("الغاء الدمج"))
+        await message.reply("ماذا تريد ان تسمي الملف؟", reply_markup=custom_markup(["الغاء الدمج"]))
 
 # get the file name
 @dp.message_handler(state=MergePdf.file_name)
@@ -615,7 +580,7 @@ async def merge(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             data['folder'] = f"cache/{randfile}"
         await MergeImages.next()
-        await message.reply("ماذا تريد ان تسمي الملف؟", reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True).add("الغاء الدمج"))
+        await message.reply("ماذا تريد ان تسمي الملف؟", reply_markup=custom_markup(["الغاء الدمج"]))
 
 
 # get the images from the user
