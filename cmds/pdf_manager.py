@@ -26,7 +26,7 @@ def images_to_pdf(images: list, temp_path):
             images_to_save.append(pic)
         images_to_save[0].save(pdf_output, save_all=True, append_images=images_to_save[1:])
         return pdf_output
-
+"""
 def compress_pdf(pdf, temp_path):
     pdf_reader = PdfReader(pdf)
     pdf_writer = PdfWriter()
@@ -41,3 +41,4 @@ def compress_pdf(pdf, temp_path):
         pdf_writer.write(file)
 
     return pdf_output
+"""

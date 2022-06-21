@@ -15,9 +15,9 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, CompressPdf
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup
-from cmds.pdf_manager import merge_pdfs, images_to_pdf, compress_pdf
+from cmds.pdf_manager import merge_pdfs, images_to_pdf
 
 # handle heroku dotenv not found and fails to get the token
 try:
