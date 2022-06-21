@@ -17,6 +17,9 @@ from aiogram.dispatcher.filters import Text
 from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, custom_markup
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
+from commands_handlers.unkown_message_handler import unknow_messages
+from commands_handlers.tools_handler import Imgs2Pdf_file_name, Imgs2Pdf_get_images, Imgs2Pdf_Imgs_downloader, Imgs2Pdf_merge_handler, Imgs2Pdf_cancel_handler
+import asyncio
 
 # handle heroku dotenv not found and fails to get the token
 try:
@@ -62,8 +65,6 @@ hw_day_input_markup = custom_markup(["الاحد","الاثنين","الثلاث
 # create select stage for add/delete manager input markup
 add_del_man_stage_input_markup = custom_markup(["stage1","stage2","stage3","stage4","الغاء الادخال"])
 
-# create merge markup
-merge_markup = custom_markup(["دمج","الغاء الدمج"])
 
 # create compress markup
 compress_markup = custom_markup(["الغاء الضغط"])
@@ -571,66 +572,33 @@ async def merge_handler(message: types.Message, state: FSMContext):
 # ask the user about the name of the file
 @dp.message_handler(lambda message: message.text == "تحويل الصور الى pdf")
 async def merge(message: types.Message, state: FSMContext):
-    if check_user_exist(message.from_user.id) == False:
-        await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        await MergeImages.folder.set()
-        randfile = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
-        os.system(f"mkdir cache/{randfile}")
-        async with state.proxy() as data:
-            data['folder'] = f"cache/{randfile}"
-        await MergeImages.next()
-        await message.reply("ماذا تريد ان تسمي الملف؟", reply_markup=custom_markup(["الغاء الدمج"]))
+    await Imgs2Pdf_file_name(message, state)
 
 
 # get the images from the user
 @dp.message_handler(state=MergeImages.file_name)
 async def merge(message: types.Message, state: FSMContext):
-    if check_user_exist(message.from_user.id) == False:
-        await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        async with state.proxy() as data:
-            data['file_name'] = message.text
+    await Imgs2Pdf_get_images(message, state)
 
-        await MergeImages.next()
-        await message.reply("ارسل الصور وعند الرد على جميع الصور برسالة 'تم تنزيل الملف' يمكنك ارسل أو ضعط دمج", reply_markup=merge_markup)
 
 # create cancel images merge to pdf message handler
 @dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergeImages)
 async def merge(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        os.system(f"rm -rf {data['folder']}")
-        await message.reply("تم الغاء الدمج وحذف الملفات", reply_markup=get_user_markup(message.from_user.id))
-    await state.finish()
+    await Imgs2Pdf_cancel_handler(message, state)
 
-# create pdfs getter
+
+# create images downloader
 @dp.message_handler(state=MergeImages.temp, content_types=ContentTypes.DOCUMENT)
-async def pdf_getter(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        if document := message.document:
-            await document.download(
-                destination_file=f"{data['folder']}/{document.file_name}",
-            )
-            await message.reply("تم تنزيل الملف")
-            with open((data['folder']+"/files"), 'a+') as fls:
-                fls.write(f"{data['folder']}/{document.file_name};")
-                fls.close()
+async def images_downloader(message: types.Message, state: FSMContext):
+    await Imgs2Pdf_Imgs_downloader(message, state)
+    
 
-# create merge pdf command handler
+# create merge images command handler
 @dp.message_handler(lambda message: message.text == "دمج" ,state=MergeImages.temp)
 async def merge(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        f = open((data['folder'] + "/files"), 'r')
-        file = f.read()
-        pdfs = file.split(";")
-        pdfs.remove('')
-        try:
-            await bot.send_message(message.chat.id, "جاري دمج الصور و رفع الملف")
-            await bot.send_document(message.chat.id, document=open(images_to_pdf(pdfs, data['folder'], data['file_name']), 'rb'), reply_markup=get_user_markup(message.from_user.id))
-        except:
-            await message.reply("فشل دمج الملفات")
-        os.system(f"rm -rf {data['folder']}")
-    await state.finish()
+    await Imgs2Pdf_merge_handler(message, state, bot)
+
+
 """
 # create pdf compress handler
 @dp.message_handler(lambda message: message.text == "ضغط ملف pdf (تقليل حجم)")
@@ -671,12 +639,9 @@ async def download_and_upload(message: types.Message, state: FSMContext):
 
 # create unkown message handler
 @dp.message_handler()
-async def uknow_messages(message: types.Message):
-    await message.reply("""
-عذرا لم افهم ماذا تقول
-يمكنك ارسال بدء لعرض الاوامر أو اضغط على
-/start
-""")
+async def unknow(message: types.Message):
+    loop = asyncio.get_event_loop()
+    await unknow_messages(message)
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
