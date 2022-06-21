@@ -5,10 +5,7 @@ managers:
   stage3: []
   stage4: []
 usernames:
-  stage1:
-  - LAITH343
-  - LAITH343
-  - null
+  stage1: []
   stage2: []
   stage3: []
   stage4: []
@@ -17,7 +14,6 @@ users:
   - 708690017
   stage1:
   - 708690017
-  - 2139993594
   stage2: []
   stage3: []
   stage4: []
