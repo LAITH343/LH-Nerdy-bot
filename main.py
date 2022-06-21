@@ -541,6 +541,7 @@ async def view_man_permissions(message: types.Message):
         await message.reply("ليس لديك الصلاحية لعرض هذه القائمة", reply_markup=get_user_markup(message.from_user.id))
 
 # create merge pdfs message handler
+# ask the user about the file name
 @dp.message_handler(lambda message: message.text == "دمج ملفات pdf")
 async def merge(message: types.Message, state: FSMContext):
     if check_user_exist(message.from_user.id) == False:
@@ -551,10 +552,21 @@ async def merge(message: types.Message, state: FSMContext):
         os.system(f"mkdir cache/{randfile}")
         async with state.proxy() as data:
             data['folder'] = f"cache/{randfile}"
-        await message.reply("ارسل ملفات الpdf ثم ارسل دمج", reply_markup=merge_markup)
+        await MergePdf.next()
+        await message.reply("ماذا تريد ان تسمي الملف؟", reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True).add("الغاء الدمج"))
+
+# get the file name
+@dp.message_handler(state=MergePdf.file_name)
+async def get_file_name(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['file_name'] = message.text
+
+    await MergePdf.next()
+    await bot.send_message(message.chat.id, "ارسل الملفات وعند الرد على جميع الملفات برسالة 'تم تنزيل الملف' يمكنك ارسل أو ضعط دمج", reply_markup=merge_markup)
+
 
 # create merge pdfs message handler
-@dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergePdf.folder)
+@dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergePdf)
 async def merge(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         os.system(f"rm -rf {data['folder']}")
@@ -562,7 +574,7 @@ async def merge(message: types.Message, state: FSMContext):
     await state.finish()
 
 # create pdfs getter
-@dp.message_handler(state=MergePdf.folder, content_types=ContentTypes.DOCUMENT)
+@dp.message_handler(state=MergePdf.temp, content_types=ContentTypes.DOCUMENT)
 async def pdf_getter(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         if document := message.document:
@@ -575,7 +587,7 @@ async def pdf_getter(message: types.Message, state: FSMContext):
                 fls.close()
 
 # create merge pdf command handler
-@dp.message_handler(lambda message: message.text == "دمج" ,state=MergePdf.folder)
+@dp.message_handler(lambda message: message.text == "دمج" ,state=MergePdf.temp)
 async def merge_handler(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         f = open((data['folder'] + "/files"), 'r')
@@ -583,7 +595,7 @@ async def merge_handler(message: types.Message, state: FSMContext):
         pdfs = file.split(";")
         pdfs.remove('')
         try:
-            await bot.send_document(message.chat.id, document=open(compress_pdf(pdfs, data['folder']), 'rb'), reply_markup=get_user_markup(message.from_user.id))
+            await bot.send_document(message.chat.id, document=open(merge_pdfs(pdfs, data['folder'], data['file_name']), 'rb'), reply_markup=get_user_markup(message.from_user.id))
         except:
             await message.reply("فشل دمج الملفات")
             os.system(f"rm -rf {data['folder']}")
@@ -619,7 +631,7 @@ async def merge(message: types.Message, state: FSMContext):
         await message.reply("ارسل الصور وعند الرد على جميع الصور برسالة 'تم تنزيل الملف' يمكنك ارسل أو ضعط دمج", reply_markup=merge_markup)
 
 # create cancel images merge to pdf message handler
-@dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergeImages.temp)
+@dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergeImages)
 async def merge(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         os.system(f"rm -rf {data['folder']}")

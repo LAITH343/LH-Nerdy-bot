@@ -3,9 +3,9 @@ from PIL import Image
 from os import path
 
 
-def merge_pdfs(pdfs: list, temp_path):
+def merge_pdfs(pdfs: list, temp_path, name):
     pdf_merger = PdfMerger()
-    pdf_output = f"{temp_path}/merged.pdf"
+    pdf_output = f"{temp_path}/{name}.pdf"
     for i in pdfs:
         pdf_merger.append(i)
     pdf_merger.write(pdf_output)
@@ -14,7 +14,7 @@ def merge_pdfs(pdfs: list, temp_path):
 
 def images_to_pdf(images: list, temp_path, name):
     if len(images) == 1:
-        pdf_output = f"{temp_path}/{path.splitext(images[0])[0]}.pdf"
+        pdf_output = f"{temp_path}/{name}.pdf"
         pic = Image.open(images[0]).convert('RGB')
         pic.save(pdf_output)
         return pdf_output
