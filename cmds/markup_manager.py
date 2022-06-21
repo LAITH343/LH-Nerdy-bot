@@ -10,6 +10,7 @@ def get_user_markup(uid):
 		main_markup.add("معلوماتي ❓")
 		main_markup.add("دمج ملفات pdf")
 		main_markup.add("تحويل الصور الى pdf")
+		main_markup.add("ضغط ملف pdf (تقليل حجم)")
 		if get_manager_stage(uid) != False:
 			main_markup.add("عرض صلاحيات المشرف 💂")
 		if check_admin(uid) == True:
