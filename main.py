@@ -15,9 +15,9 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, CompressPdf
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup
-from cmds.pdf_manager import merge_pdfs, images_to_pdf
+from cmds.pdf_manager import merge_pdfs, images_to_pdf, compress_pdf
 
 # handle heroku dotenv not found and fails to get the token
 try:
@@ -98,6 +98,10 @@ add_del_man_stage_input_markup.add("الغاء الادخال")
 merge_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 merge_markup.add("دمج")
 merge_markup.add("الغاء الدمج")
+
+# create compress markup
+compress_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+compress_markup.add("الغاء الضغط")
 
 # set new user stage
 @dp.message_handler(lambda message: message.text == "مرحلة اولى")
@@ -579,7 +583,7 @@ async def merge_handler(message: types.Message, state: FSMContext):
         pdfs = file.split(";")
         pdfs.remove('')
         try:
-            await bot.send_document(message.chat.id, document=open(merge_pdfs(pdfs, data['folder']), 'rb'), reply_markup=get_user_markup(message.from_user.id))
+            await bot.send_document(message.chat.id, document=open(compress_pdf(pdfs, data['folder']), 'rb'), reply_markup=get_user_markup(message.from_user.id))
         except:
             await message.reply("فشل دمج الملفات")
         os.system(f"rm -rf {data['folder']}")
@@ -633,6 +637,43 @@ async def cancel_handler(message: types.Message, state: FSMContext):
             await message.reply("فشل دمج الملفات")
         os.system(f"rm -rf {data['folder']}")
     await state.finish()
+
+# create pdf compress handler
+@dp.message_handler(lambda message: message.text == "ضغط ملف pdf (تقليل حجم)")
+async def merge(message: types.Message, state: FSMContext):
+    if check_user_exist(message.from_user.id) == False:
+        await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await CompressPdf.folder.set()
+        randfile = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
+        os.system(f"mkdir cache/{randfile}")
+        async with state.proxy() as data:
+            data['folder'] = f"cache/{randfile}"
+        await message.reply("ارسل ملف الpdf", reply_markup=compress_markup)
+
+# create compress cancel message handler
+@dp.message_handler(lambda message: message.text == "الغاء الضغط", state=CompressPdf.folder)
+async def compress_cancel(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        os.system(f"rm -rf {data['folder']}")
+        await message.reply("تم الغاء الضغط وحذف الملفات", reply_markup=get_user_markup(message.from_user.id))
+    await state.finish()
+
+# download the file and re-send it after compresing
+@dp.message_handler(state=CompressPdf.folder, content_types=ContentTypes.DOCUMENT)
+async def download_and_upload(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        if document := message.document:
+            await bot.send_message(message.chat.id, "جاري تنزيل الملف يرجى الانتضار")
+            await document.download(
+                destination_file=f"{data['folder']}/{document.file_name}",
+            )
+            await bot.send_message(message.chat.id, "جاري ضغط الملف يرجى الانتضار")
+            await bot.send_document(message.chat.id, document=open(compress_pdf(f"{data['folder']}/{document.file_name}", data['folder']), 'rb'), reply_markup=get_user_markup(message.from_user.id))
+                # await message.reply("فشل دمج الملفات")
+            os.system(f"rm -rf {data['folder']}")
+        await state.finish()
+
 
 # create unkown message handler
 @dp.message_handler()
