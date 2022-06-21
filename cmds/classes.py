@@ -33,6 +33,6 @@ class MergePdf(StatesGroup):
 class MergeImages(StatesGroup):
 	folder = State()
 
-class CompressPdf(StatesGroup):
-	folder = State()
+# class CompressPdf(StatesGroup):
+# 	folder = State()
 

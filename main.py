@@ -637,7 +637,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
             await message.reply("فشل دمج الملفات")
         os.system(f"rm -rf {data['folder']}")
     await state.finish()
-
+"""
 # create pdf compress handler
 @dp.message_handler(lambda message: message.text == "ضغط ملف pdf (تقليل حجم)")
 async def merge(message: types.Message, state: FSMContext):
@@ -673,7 +673,7 @@ async def download_and_upload(message: types.Message, state: FSMContext):
                 # await message.reply("فشل دمج الملفات")
             os.system(f"rm -rf {data['folder']}")
         await state.finish()
-
+"""
 
 # create unkown message handler
 @dp.message_handler()
