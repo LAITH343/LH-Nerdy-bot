@@ -32,3 +32,9 @@ async def View_pdf_menu(message, bot):
 	    await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
 	else:
 	    await bot.send_message(message.chat.id, "اختر الملف من القائمة", reply_markup=custom_markup(["منطق رقمي", "برمجة سي بلس بلس 2", "اساسيات البرمجة", "الرجوع للقائمة الرئيسية 🏠"]))
+
+async def tools_menu(message, bot):
+	if check_user_exist(message.from_user.id) == False:
+	    await bot.send_message(message.chat.id, "يرجى اختيار المرحلة اولا")
+	else:
+	    await message.reply("أختر من القائمة", reply_markup=custom_markup(["دمج ملفات pdf","تحويل الصور الى pdf"]))

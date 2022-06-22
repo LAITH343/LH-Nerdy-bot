@@ -110,6 +110,11 @@ async def stage_select_menu(message: types.Message):
 async def start_message(message: types.Message):
     await bot.send_message(message.chat.id, "أهلا بك في البوت", reply_markup=get_user_markup(message.from_user.id))
 
+# create tools option at main meun 
+@dp.message_handler(lambda message: message.text == "أدوات 🧰")
+async def tools(message: types.Message):
+    await main_menu_handler.tools_menu(message, bot)
+
 # create pdf menu 
 @dp.message_handler(lambda message: message.text == "ملازم 📚")
 async def pdf_message(message: types.Message):
@@ -368,6 +373,11 @@ async def view_man_permissions(message: types.Message):
     await main_menu_handler.View_manager_list(message)
 
 # create merge pdfs message handler
+# create merge pdf canceler handler
+@dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergePdf)
+async def merge(message: types.Message, state: FSMContext):
+    await tools_handler.MergePdf_cancel_handler(message, state)
+
 # ask the user about the file name
 @dp.message_handler(lambda message: message.text == "دمج ملفات pdf")
 async def merge_file_name(message: types.Message, state: FSMContext):
@@ -378,11 +388,6 @@ async def merge_file_name(message: types.Message, state: FSMContext):
 async def get_file_name(message: types.Message, state: FSMContext):
     await tools_handler.MergePdf_get_file_name(message, state, bot)
 
-
-# create merge pdfs message handler
-@dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergePdf)
-async def merge(message: types.Message, state: FSMContext):
-    await tools_handler.MergePdf_cancel_handler(message, state)
 
 # create pdfs getter
 @dp.message_handler(state=MergePdf.temp, content_types=ContentTypes.DOCUMENT)
@@ -395,6 +400,12 @@ async def merge_handler(message: types.Message, state: FSMContext):
     await tools_handler.MergePdf_merge(message, state, bot)
 
 # create images to pdf message handler
+# create cancel images merge to pdf message handler
+@dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergeImages)
+async def merge(message: types.Message, state: FSMContext):
+    await tools_handler.Imgs2Pdf_cancel_handler(message, state)
+
+
 # ask the user about the name of the file
 @dp.message_handler(lambda message: message.text == "تحويل الصور الى pdf")
 async def merge(message: types.Message, state: FSMContext):
@@ -405,12 +416,6 @@ async def merge(message: types.Message, state: FSMContext):
 @dp.message_handler(state=MergeImages.file_name)
 async def merge(message: types.Message, state: FSMContext):
     await tools_handler.Imgs2Pdf_get_images(message, state)
-
-
-# create cancel images merge to pdf message handler
-@dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergeImages)
-async def merge(message: types.Message, state: FSMContext):
-    await tools_handler.Imgs2Pdf_cancel_handler(message, state)
 
 
 # create images downloader
