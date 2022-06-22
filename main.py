@@ -18,7 +18,7 @@ from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Vi
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, custom_markup
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
 from commands_handlers.unkown_message_handler import unknow_messages
-from commands_handlers.tools_handler import Imgs2Pdf_file_name, Imgs2Pdf_get_images, Imgs2Pdf_Imgs_downloader, Imgs2Pdf_merge_handler, Imgs2Pdf_cancel_handler
+from commands_handlers.tools_handler import Imgs2Pdf_file_name, Imgs2Pdf_get_images, Imgs2Pdf_Imgs_downloader, Imgs2Pdf_merge_handler, Imgs2Pdf_cancel_handler, MergePdf_ask_file_name, MergePdf_get_file_name, MergePdf_cancel_handler, MergePdf_get_files, MergePdf_merge
 import asyncio
 
 # handle heroku dotenv not found and fails to get the token
@@ -509,64 +509,29 @@ async def view_man_permissions(message: types.Message):
 # create merge pdfs message handler
 # ask the user about the file name
 @dp.message_handler(lambda message: message.text == "دمج ملفات pdf")
-async def merge(message: types.Message, state: FSMContext):
-    if check_user_exist(message.from_user.id) == False:
-        await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        await MergePdf.folder.set()
-        randfile = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
-        os.system(f"mkdir cache/{randfile}")
-        async with state.proxy() as data:
-            data['folder'] = f"cache/{randfile}"
-        await MergePdf.next()
-        await message.reply("ماذا تريد ان تسمي الملف؟", reply_markup=custom_markup(["الغاء الدمج"]))
+async def merge_file_name(message: types.Message, state: FSMContext):
+    await MergePdf_ask_file_name(message, state)
 
 # get the file name
 @dp.message_handler(state=MergePdf.file_name)
 async def get_file_name(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['file_name'] = message.text
-
-    await MergePdf.next()
-    await bot.send_message(message.chat.id, "ارسل الملفات وعند الرد على جميع الملفات برسالة 'تم تنزيل الملف' يمكنك ارسل أو ضعط دمج", reply_markup=merge_markup)
+    await MergePdf_get_file_name(message, state, bot)
 
 
 # create merge pdfs message handler
 @dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergePdf)
 async def merge(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        os.system(f"rm -rf {data['folder']}")
-        await message.reply("تم الغاء الدمج وحذف الملفات", reply_markup=get_user_markup(message.from_user.id))
-    await state.finish()
+    await MergePdf_cancel_handler(message, state)
 
 # create pdfs getter
 @dp.message_handler(state=MergePdf.temp, content_types=ContentTypes.DOCUMENT)
 async def pdf_getter(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        if document := message.document:
-            await document.download(
-                destination_file=f"{data['folder']}/{document.file_name}",
-            )
-            await message.reply("تم تنزيل الملف")
-            with open((data['folder']+"/files"), 'a+') as fls:
-                fls.write(f"{data['folder']}/{document.file_name};")
-                fls.close()
+    await MergePdf_get_files(message, state)
 
 # create merge pdf command handler
 @dp.message_handler(lambda message: message.text == "دمج" ,state=MergePdf.temp)
 async def merge_handler(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        f = open((data['folder'] + "/files"), 'r')
-        file = f.read()
-        pdfs = file.split(";")
-        pdfs.remove('')
-        try:
-            await bot.send_document(message.chat.id, document=open(merge_pdfs(pdfs, data['folder'], data['file_name']), 'rb'), reply_markup=get_user_markup(message.from_user.id))
-        except:
-            await message.reply("فشل دمج الملفات")
-            os.system(f"rm -rf {data['folder']}")
-        os.system(f"rm -rf {data['folder']}")
-    await state.finish()
+    await MergePdf_merge(message, state, bot)
 
 # create images to pdf message handler
 # ask the user about the name of the file

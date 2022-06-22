@@ -5,3 +5,4 @@ __pycache__/
 cache/*
 .idea/
 !cache/.gitkeep
+commands_handlers/__pycache__/
