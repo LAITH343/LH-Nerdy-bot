@@ -1,10 +1,6 @@
 stage1:
-  book_name:
-  - "\u0645\u0646\u0637\u0642 \u0631\u0642\u0645\u064A"
-  - "\u0645\u0646\u0637\u0642 \u0631\u0642\u0645\u064A"
-  book_path:
-  - books/stage1/DS-Mid-Q4.pdf
-  - storage/books/stage1/DS-Mid-Q4.pdf
+  book_name: []
+  book_path: []
 stage2:
   book_name: []
   book_path: []

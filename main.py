@@ -21,6 +21,9 @@ from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, c
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
 from commands_handlers.unkown_message_handler import unknow_messages
 from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler
+from cmds.books_manager import get_files_list, get_file_by_name
+
+
 # handle heroku dotenv not found and fails to get the token
 try:
     from dotenv import load_dotenv
@@ -109,12 +112,41 @@ async def stage_select_menu(message: types.Message):
 async def start_message(message: types.Message):
     await bot.send_message(message.chat.id, "أهلا بك في البوت", reply_markup=get_user_markup(message.from_user.id))
 
+# create view book handler
+@dp.message_handler(lambda message: message.text == "الكتب 📚")
+async def view_books(message: types.Message):
+    await main_menu_handler.Books_View(message)
+
+# create upload book handler
+stage_translate = {
+        "1": "stage1",
+        "2": "stage2",
+        '3': "stage3",
+        '4': "stage4"
+    }
+@dp.message_handler(lambda message: message.text in get_files_list(stage_translate[user_manager.check_user_stage(message.from_user.id)]))
+async def upload_book(message: types.Message):
+    await message.answer("جاري رفع الكتاب", reply_markup=get_user_markup(message.from_user.id))
+    await bot.send_document(message.chat.id, document=open(get_file_by_name(stage_translate[user_manager.check_user_stage(message.from_user.id)], message.text), 'rb'))
+
 # create tools option at main meun 
 @dp.message_handler(lambda message: message.text == "أدوات 🧰")
 async def tools(message: types.Message):
     await main_menu_handler.tools_menu(message, bot)
 
-# create pdf menu 
+# create add book cancler
+@dp.message_handler(lambda message: message.text == 'الغاء الاضافة', state=AddNewFile)
+async def cancel_handler(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state is None:
+        return
+
+    logging.info('Cancelling state %r', current_state)
+    # Cancel state and inform user about it
+    await state.finish()
+    await message.reply('تم الغاء الاضافة', reply_markup=get_user_markup(message.from_user.id))
+
+# create add book 
 @dp.message_handler(lambda message: message.text == "اضافة كتاب 📕")
 async def pdf_message(message: types.Message):
     await main_menu_handler.Add_book(message, bot)

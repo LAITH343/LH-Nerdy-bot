@@ -4,7 +4,7 @@ from cmds.user_manager import check_admin, get_manager_stage, check_user_exist
 def get_user_markup(uid):
 	main_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	if check_user_exist(uid) == True:
-		main_markup.add("ملازم 📚", "عرض الواجبات 📃")
+		main_markup.add("الكتب 📚", "عرض الواجبات 📃")
 		# main_markup.add("الصور 📷")
 		main_markup.add("أدوات 🧰", "معلوماتي ❓")
 		# main_markup.add("ضغط ملف pdf (تقليل حجم)")
@@ -39,4 +39,11 @@ def custom_markup(options: list):
 	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	for option in options:
 		custom.add(option)
+	return custom
+
+def books_markup(options: list):
+	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+	for option in options:
+		custom.add(option)
+	custom.add("الرجوع للقائمة الرئيسية 🏠")
 	return custom

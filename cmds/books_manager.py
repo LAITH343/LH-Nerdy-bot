@@ -19,18 +19,26 @@ def get_files_list(stage):
 		file_name = link[stage]["book_name"]
 	
 	files_list = []	
-	
 	for file in file_name:
-		files_list.append(file_name)
+		files_list.append(file[0:])
 
 	return files_list
 
-def del_file(stage, name, path):
+def del_file(stage, name):
 	with open("storage/links.yml", 'r') as l:
 		link = yaml.safe_load(l)
-		link[stage]["book_name"].remove(name)
-		link[stage]["book_path"].remove(path)
+		index = link[stage]["book_name"].index(name)
+		link[stage]["book_name"].pop(index)
+		link[stage]["book_path"].pop(index)
 	if link:
 		with open("storage/links.yml", 'w') as wd:
 			yaml.safe_dump(link, wd)
 	return True
+
+def get_file_by_name(stage, name):
+	with open("storage/links.yml", 'r') as links:
+		cfg = yaml.safe_load(links)
+		index = cfg[stage]["book_name"].index(name)
+		file_path = cfg[stage]["book_path"][index]
+	
+	return file_path
