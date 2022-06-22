@@ -1,4 +1,16 @@
-logic: "https://zun7mgdw4mpxpmxjxzxvpw.on.drv.tw/www.cs-bot.com/logic.pdf"
-cplusplus: "https://zun7mgdw4mpxpmxjxzxvpw.on.drv.tw/www.cs-bot.com/c2-all.pdf"
-pf: "https://zun7mgdw4mpxpmxjxzxvpw.on.drv.tw/www.cs-bot.com/pf-all.pdf"
- 
+stage1:
+  book_name:
+  - "\u0645\u0646\u0637\u0642 \u0631\u0642\u0645\u064A"
+  - "\u0645\u0646\u0637\u0642 \u0631\u0642\u0645\u064A"
+  book_path:
+  - books/stage1/DS-Mid-Q4.pdf
+  - storage/books/stage1/DS-Mid-Q4.pdf
+stage2:
+  book_name: []
+  book_path: []
+stage3:
+  book_name: []
+  book_path: []
+stage4:
+  book_name: []
+  book_path: []

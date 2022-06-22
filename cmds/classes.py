@@ -37,6 +37,10 @@ class MergeImages(StatesGroup):
 	file_name = State()
 	temp = State()
 
+class AddNewFile(StatesGroup):
+	file_name = State()
+	file_path = State()
+
 # class CompressPdf(StatesGroup):
 # 	folder = State()
 

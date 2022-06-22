@@ -31,6 +31,7 @@ def manager_markup():
 	man_markup.add("اضافة واجب 📝")
 	man_markup.add("حذف واجب 📝")
 	man_markup.add("أرسال اعلان 📢")
+	man_markup.add("اضافة كتاب 📕")
 	man_markup.add("الرجوع للقائمة الرئيسية 🏠")
 	return man_markup
 

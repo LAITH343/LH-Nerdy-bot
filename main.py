@@ -8,7 +8,6 @@ from aiogram.types import ContentTypes, MenuButtonDefault
 from telegram import MenuButton
 
 from sources.s import answer
-from sources.pdfs_links import links
 from cmds.myinfo import myInfo
 from cmds.hw_adder import add_hw
 from cmds.hw_getter import get_hw, get_hw_allweek
@@ -17,7 +16,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, custom_markup
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
 from commands_handlers.unkown_message_handler import unknow_messages
@@ -116,9 +115,19 @@ async def tools(message: types.Message):
     await main_menu_handler.tools_menu(message, bot)
 
 # create pdf menu 
-@dp.message_handler(lambda message: message.text == "ملازم 📚")
+@dp.message_handler(lambda message: message.text == "اضافة كتاب 📕")
 async def pdf_message(message: types.Message):
-    await main_menu_handler.View_pdf_menu(message, bot)
+    await main_menu_handler.Add_book(message, bot)
+
+# get file name
+@dp.message_handler(state=AddNewFile.file_name)
+async def Add_file_get_name(message: types.Message, state: FSMContext):
+    await main_menu_handler.Add_book_get_file_name(message, state, bot)
+
+# download file
+@dp.message_handler(state=AddNewFile.file_path, content_types=ContentTypes.DOCUMENT)
+async def Add_file_download(message: types.Message, state: FSMContext):
+    await main_menu_handler.Add_book_command(message, state, bot)
 
 #create my info message
 @dp.message_handler(lambda message: message.text == "معلوماتي ❓")
@@ -128,7 +137,7 @@ async def my_info_message(message: types.Message):
 # create exit message handler
 @dp.message_handler(lambda message: message.text == "أغلاق ❌")
 async def cancel_message(message: types.Message):
-    await message.reply("تم أغلاق القائمة\nلعرض القائمة من جديد ارسل بدء أو اضغط على /start", reply_markup=types.ReplyKeyboardRemove())
+    await message.answer("تم أغلاق القائمة\nلعرض القائمة من جديد ارسل بدء أو اضغط على /start", reply_markup=types.ReplyKeyboardRemove())
 
 # create collage logo message handler
 @dp.message_handler(lambda message: message.text == "شعار الكلية")
