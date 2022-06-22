@@ -6,3 +6,8 @@ cache/*
 .idea/
 !cache/.gitkeep
 commands_handlers/__pycache__/
+storage/books/
+!storage/books/stage1/.gitkeep
+!storage/books/stage2/.gitkeep
+!storage/books/stage3/.gitkeep
+!storage/books/stage4/.gitkeep
