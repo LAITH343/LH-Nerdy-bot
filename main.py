@@ -2,6 +2,7 @@ import logging
 import os
 import string
 import random
+import asyncio
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ContentTypes
 from sources.s import answer
@@ -19,7 +20,9 @@ from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, c
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
 from commands_handlers.unkown_message_handler import unknow_messages
 from commands_handlers.tools_handler import Imgs2Pdf_file_name, Imgs2Pdf_get_images, Imgs2Pdf_Imgs_downloader, Imgs2Pdf_merge_handler, Imgs2Pdf_cancel_handler, MergePdf_ask_file_name, MergePdf_get_file_name, MergePdf_cancel_handler, MergePdf_get_files, MergePdf_merge
-import asyncio
+from commands_handlers.main_menu_handler import View_manager_list, View_admin_list
+from commands_handlers.admin_menu_handler import View_all_users, Send_anno_4all, Get_anno_msg_and_send, Delete_manager, Delete_manager_get_stage, Delete_manager_get_uid_and_del, Add_manager, Add_manager_get_stage, Add_manager_get_uid_and_add
+
 
 # handle heroku dotenv not found and fails to get the token
 try:
@@ -56,14 +59,8 @@ stages_markup = custom_markup(["مرحلة اولى","مرحلة ثانية","م
 # create photos menu 
 pic_markup = custom_markup(["شعار القسم","شعار الكلية","الرجوع للقائمة الرئيسية 🏠"])
 
-# create cancel input markup
-cancel_input_markup = custom_markup(["الغاء الادخال"])
-
 # create hw day input markup
 hw_day_input_markup = custom_markup(["الاحد","الاثنين","الثلاثاء","الاربعاء","الخميس","الغاء الادخال"])
-
-# create select stage for add/delete manager input markup
-add_del_man_stage_input_markup = custom_markup(["stage1","stage2","stage3","stage4","الغاء الادخال"])
 
 
 # create compress markup
@@ -373,62 +370,34 @@ async def process_day(message: types.Message, state: FSMContext):
 # create add manager command handler
 @dp.message_handler(lambda message: message.text == 'اضافة مشرف 💂')
 async def user_managment(message: types.Message):
-    if check_admin(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        await AddManager.stage.set()
-        await message.reply("اختر المرحلة", reply_markup=add_del_man_stage_input_markup)
+    await Add_manager(message, bot)
 
 # get the stage from the user
 @dp.message_handler(state=AddManager.stage)
 async def process_name(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['stage'] = message.text
-
-    await AddManager.next()
-    await message.reply("ارسل الID الخاص بالمستخدم", reply_markup=cancel_input_markup)
+    await Add_manager_get_stage(message, state)
 
 # get user id form the user and end data entry
 @dp.message_handler(lambda message: message.text.isdigit(), state=AddManager.uid)
 async def process_age(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['uid'] = int(message.text)
-        if add_manager(data['stage'], data['uid']) == True:
-            await message.reply("تم الاضافة بنجاح", reply_markup=get_user_markup(message.from_user.id))
-        else:
-            await bot.send_message(message.chat.id, "فشل اضافة المشرف", reply_markup=get_user_markup(message.from_user.id))
-    await state.finish()
+    await Add_manager_get_uid_and_add(message, state, bot)
 
 
 
 # create delete manager command handler
 @dp.message_handler(lambda message: message.text == 'حذف مشرف 💂')
 async def user_managment(message: types.Message):
-    if check_admin(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        await DelManager.stage.set()
-        await message.reply("اختر المرحلة", reply_markup=add_del_man_stage_input_markup)
+    await Delete_manager(message, bot)
 
 # get the stage from the user
 @dp.message_handler(state=DelManager.stage)
 async def process_name(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['stage'] = message.text
-
-    await DelManager.next()
-    await message.reply("ارسل الID الخاص بالمستخدم", reply_markup=cancel_input_markup)
+    await Delete_manager_get_stage(message, state)
 
 # get user id form the user and end data entry
 @dp.message_handler(lambda message: message.text.isdigit(), state=DelManager.uid)
 async def process_age(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['uid'] = int(message.text)
-        if del_manager(data['stage'], data['uid']) == True:
-            await message.reply("تم الحذف بنجاح", reply_markup=get_user_markup(message.from_user.id))
-        else:
-            await bot.send_message(message.chat.id, "فشل حذف المشرف", reply_markup=get_user_markup(message.from_user.id))
-    await state.finish()
+    await Delete_manager_get_uid_and_del(message, state, bot)
 
 # send announcement for a stage by manager
 @dp.message_handler(lambda message: message.text == 'أرسال اعلان 📢')
@@ -456,55 +425,28 @@ async def process_message(message: types.Message, state: FSMContext):
 # send announcement for all stages by admin
 @dp.message_handler(lambda message: message.text == 'أرسال اعلان للجميع 📢')
 async def anno_managment(message: types.Message):
-    if check_admin(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        await AnnoAll.m.set()
-        await message.reply("ارسل الرسالى التي تريد اعلانها", reply_markup=cancel_input_markup)
+    await Send_anno_4all(message, bot)
 
 # get the message from the manager and send it to the student
 @dp.message_handler(state=AnnoAll.m)
 async def process_message(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['m'] = f"أعلان للجميع 📢 بواسطة: @{message.from_user.username}\n\n"
-        data['m'] += message.text
-        try:
-            for user in get_users_uid_all(message.from_user.id):
-                await bot.send_message(user, data['m'])
-            await message.reply("تم ارسال الاعلان بنجاح", reply_markup=get_user_markup(message.from_user.id))
-        except:
-            await message.reply("فشل ارسال الاعلان", reply_markup=get_user_markup(message.from_user.id))
-    await state.finish()
+    await Get_anno_msg_and_send(message, state, bot)
 
 # create list of user id and username for all users 
 @dp.message_handler(lambda message: message.text == "عرض جميع المستخدمين 📋")
 async def make_list(message: types.Message):
-    if check_admin(message.from_user.id) != True:
-        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        uids = get_users_uid_all(message.from_user.id)
-        usernames = get_all_users_username()
-        message_text = ""
-        for (uid, username) in zip(uids, usernames):
-            message_text += f"أيدي المستخدم {uid}   يوزر المستخدم @{username}\n"
-        await message.reply(message_text, reply_markup=get_user_markup(message.from_user.id))
+    await View_all_users(message, bot)
 
 # create admin permissions list getter 
 @dp.message_handler(lambda message: message.text == "عرض صلاحيات الادمن 👮")
 async def view_admin_permissions(message: types.Message):
-    if check_admin(message.from_user.id) == True:
-        await message.reply("تم عرض صلاحيات الادمن", reply_markup=admin_markup())
-    else:
-        await message.reply("ليس لديك الصلاحية لعرض هذه القائمة", reply_markup=get_user_markup(message.from_user.id))
+    await View_admin_list(message)
 
 
 # create manager premissions list getter 
 @dp.message_handler(lambda message: message.text == "عرض صلاحيات المشرف 💂")
 async def view_man_permissions(message: types.Message):
-    if get_manager_stage(message.from_user.id) != False:
-        await message.reply("تم عرض صلاحيات المشرف", reply_markup=manager_markup())
-    else:
-        await message.reply("ليس لديك الصلاحية لعرض هذه القائمة", reply_markup=get_user_markup(message.from_user.id))
+    await View_manager_list(message)
 
 # create merge pdfs message handler
 # ask the user about the file name
