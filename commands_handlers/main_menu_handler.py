@@ -39,7 +39,7 @@ async def tools_menu(message, bot):
 	if check_user_exist(message.from_user.id) == False:
 	    await bot.send_message(message.chat.id, "يرجى اختيار المرحلة اولا")
 	else:
-	    await message.reply("أختر من القائمة", reply_markup=custom_markup(["دمج ملفات pdf","تحويل الصور الى pdf"]))
+	    await message.reply("أختر من القائمة", reply_markup=custom_markup(["دمج ملفات pdf","تحويل الصور الى pdf","الرجوع للقائمة الرئيسية 🏠"]))
 
 async def Add_book(message, bot):
 	if get_manager_stage(message.from_user.id) == False:
