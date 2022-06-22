@@ -4,9 +4,7 @@ import string
 import random
 import asyncio
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import ContentTypes, MenuButtonDefault
-from telegram import MenuButton
-
+from aiogram.types import ContentTypes
 from sources.s import answer
 from cmds.myinfo import myInfo
 from cmds.hw_adder import add_hw
