@@ -10,7 +10,7 @@ from sources.pdfs_links import links
 from cmds.myinfo import myInfo
 from cmds.hw_adder import add_hw
 from cmds.hw_getter import get_hw, get_hw_allweek
-from cmds.user_manager import check_user_stage, add_user, del_user, check_user_exist, check_admin, add_manager, del_manager, get_manager_stage, get_users_uid, get_users_uid_all, get_all_users_username
+from cmds import user_manager
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -19,12 +19,10 @@ from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Vi
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, custom_markup
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
 from commands_handlers.unkown_message_handler import unknow_messages
-from commands_handlers.tools_handler import Imgs2Pdf_file_name, Imgs2Pdf_get_images, Imgs2Pdf_Imgs_downloader, Imgs2Pdf_merge_handler, Imgs2Pdf_cancel_handler, MergePdf_ask_file_name, MergePdf_get_file_name, MergePdf_cancel_handler, MergePdf_get_files, MergePdf_merge
-from commands_handlers.main_menu_handler import View_manager_list, View_admin_list
-from commands_handlers.admin_menu_handler import View_all_users, Send_anno_4all, Get_anno_msg_and_send, Delete_manager, Delete_manager_get_stage, Delete_manager_get_uid_and_del, Add_manager, Add_manager_get_stage, Add_manager_get_uid_and_add
-from commands_handlers.manager_menu_handler import Manager_del_hw, Manager_del_hw_command, Manager_add_hw, Manager_get_day, Manager_add_hw_command, Manager_send_anno, Manager_send_anno_command
-
-
+from commands_handlers import tools_handler 
+from commands_handlers import main_menu_handler 
+from commands_handlers import admin_menu_handler
+from commands_handlers import manager_menu_handler 
 # handle heroku dotenv not found and fails to get the token
 try:
     from dotenv import load_dotenv
@@ -67,40 +65,40 @@ compress_markup = custom_markup(["الغاء الضغط"])
 # set new user stage
 @dp.message_handler(lambda message: message.text == "مرحلة اولى")
 async def stage_select(message: types.Message):
-    if check_user_exist(message.from_user.id) == True:
+    if user_manager.check_user_exist(message.from_user.id) == True:
         await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
-        if add_user("stage1", message.from_user.id, message.from_user.username) == True:
+        if user_manager.add_user("stage1", message.from_user.id, message.from_user.username) == True:
             await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
 
 @dp.message_handler(lambda message: message.text == "مرحلة ثانية")
 async def stage_select(message: types.Message):
-    if check_user_exist(message.from_user.id) == True:
+    if user_manager.check_user_exist(message.from_user.id) == True:
         await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
-        if add_user("stage2", message.from_user.id, message.from_user.username) == True:
+        if user_manager.add_user("stage2", message.from_user.id, message.from_user.username) == True:
             await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
 
 @dp.message_handler(lambda message: message.text == "مرحلة ثالثة")
 async def stage_select(message: types.Message):
-    if check_user_exist(message.from_user.id) == True:
+    if user_manager.check_user_exist(message.from_user.id) == True:
         await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
-        if add_user("stage3", message.from_user.id, message.from_user.username) == True:
+        if user_manager.add_user("stage3", message.from_user.id, message.from_user.username) == True:
             await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
 
 @dp.message_handler(lambda message: message.text == "مرحلة رابعة")
 async def stage_select(message: types.Message):
-    if check_user_exist(message.from_user.id) == True:
+    if user_manager.check_user_exist(message.from_user.id) == True:
         await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
-        if add_user("stage4", message.from_user.id, message.from_user.username) == True:
+        if user_manager.add_user("stage4", message.from_user.id, message.from_user.username) == True:
             await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
         else:
             await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
@@ -108,7 +106,7 @@ async def stage_select(message: types.Message):
 # create select stage menu 
 @dp.message_handler(lambda message: message.text == "اختيار المرحلة")
 async def stage_select_menu(message: types.Message):
-    if check_user_exist(message.from_user.id) == True:
+    if user_manager.check_user_exist(message.from_user.id) == True:
         await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
         await bot.send_message(message.chat.id, "اختر المرحلة\nملاحظة مهمة: يمكنك اختيار المرحلة لمرة واحدة فقط", reply_markup=stages_markup)
@@ -122,7 +120,7 @@ async def start_message(message: types.Message):
 # create pdf menu 
 @dp.message_handler(lambda message: message.text == "ملازم 📚")
 async def pdf_message(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await bot.send_message(message.chat.id, "اختر الملف من القائمة", reply_markup=pdf_markup)
@@ -141,7 +139,7 @@ async def cancel_message(message: types.Message):
 # create collage logo message handler
 @dp.message_handler(lambda message: message.text == "شعار الكلية")
 async def duc_logo(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await message.reply("جاري رفع الصورة... يرجى الانتظار")
@@ -150,7 +148,7 @@ async def duc_logo(message: types.Message):
 # create cs department logo message handler
 @dp.message_handler(lambda message: message.text == "شعار القسم")
 async def dep_logo(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await message.reply("جاري رفع الصورة... يرجى الانتظار")
@@ -159,7 +157,7 @@ async def dep_logo(message: types.Message):
 # create s exams menu 
 @dp.message_handler(lambda message: message.text == "جدول الامتحانات")
 async def s_menu(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await bot.send_message(message.chat.id, "يمكنك الاختيار لعرض الجدول", reply_markup=s_markup)
@@ -167,7 +165,7 @@ async def s_menu(message: types.Message):
 # create first stage s exams message handler 
 @dp.message_handler(lambda message: message.text == "جدول المرحلة الاولى")
 async def s_stage1(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await message.reply(answer("جدول المرحلة الاولى"))
@@ -175,7 +173,7 @@ async def s_stage1(message: types.Message):
 # create second stage s exams message handler 
 @dp.message_handler(lambda message: message.text == "جدول المرحلة الثانية")
 async def s_stage2(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await message.reply(answer("جدول المرحلة الثانية"))
@@ -184,7 +182,7 @@ async def s_stage2(message: types.Message):
 # create third stage s exams message handler 
 @dp.message_handler(lambda message: message.text == "جدول المرحلة الثالثة")
 async def s_stage3(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await message.reply(answer("جدول المرحلة الثالثة"))
@@ -193,7 +191,7 @@ async def s_stage3(message: types.Message):
 # create fourth stage s exams message handler 
 @dp.message_handler(lambda message: message.text == "جدول المرحلة الرابعة")
 async def s_stage4(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await message.reply(answer("جدول المرحلة الرابعة"))
@@ -201,7 +199,7 @@ async def s_stage4(message: types.Message):
 # create back to main menu message handler
 @dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية 🏠")
 async def back_to_main_menu(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
@@ -209,7 +207,7 @@ async def back_to_main_menu(message: types.Message):
 # create logic pdf message handler
 @dp.message_handler(lambda message: message.text == "منطق رقمي")
 async def pdf_message(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await message.reply("جاري الرفع... ")
@@ -218,7 +216,7 @@ async def pdf_message(message: types.Message):
 # create c++ pdf message handler
 @dp.message_handler(lambda message: message.text == "برمجة سي بلس بلس 2")
 async def pdf_message(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await message.reply("جاري الرفع... ")
@@ -227,7 +225,7 @@ async def pdf_message(message: types.Message):
 # create pf pdf message handler
 @dp.message_handler(lambda message: message.text == "اساسيات البرمجة")
 async def pdf_message(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await message.reply("جاري الرفع... ")
@@ -237,7 +235,7 @@ async def pdf_message(message: types.Message):
 # create hw messages menu 
 @dp.message_handler(lambda message: message.text == "عرض الواجبات 📃")
 async def view_hw(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await bot.send_message(message.chat.id, "اختر اليوم من القائمة", reply_markup=hw_markup)
@@ -246,10 +244,10 @@ async def view_hw(message: types.Message):
 # create hw all week message handler
 @dp.message_handler(lambda message: message.text == "عرض واجبات الاسبوع 📖")
 async def view_hw(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
-        stage = check_user_stage(message.from_user.id)
+        stage = user_manager.check_user_stage(message.from_user.id)
         if stage == False:
             await message.reply("انت لا تنتمي الى مرحلة")
         else:
@@ -258,12 +256,12 @@ async def view_hw(message: types.Message):
 # create delete user command handler
 @dp.message_handler(commands='deluser')
 async def user_managment(message: types.Message):
-    if check_admin(message.from_user.id) == False:
+    if user_manager.check_admin(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
     else:
         m = message.get_full_command()
         values = m[1].split(" ")
-        if del_user(values[0], int(values[1])) == True:
+        if user_manager.del_user(values[0], int(values[1])) == True:
             await message.reply("تم الحذف بنجاح")
         else:
             await message.reply("حدث خطأ عند الحذف")
@@ -271,7 +269,7 @@ async def user_managment(message: types.Message):
 # create photos menu stage
 @dp.message_handler(lambda message: message.text == "الصور 📷")
 async def pics(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await bot.send_message(message.chat.id, "اختر من الصور", reply_markup=pic_markup)
@@ -293,7 +291,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
 # create view hw message handler
 @dp.message_handler(lambda message: message.text == "اختيار يوم 📋")
 async def select_hw(message: types.Message):
-    if check_user_exist(message.from_user.id) == False:
+    if user_manager.check_user_exist(message.from_user.id) == False:
         await message.reply("يجب اختيار المرحلة اولا!", reply_markup=get_user_markup(message.from_user.id))
     else:
         await Viewhw.day.set()
@@ -303,11 +301,11 @@ async def select_hw(message: types.Message):
 async def view_by_day(message: types.Message, state=Viewhw):
     async with state.proxy() as data:
         data['day'] = message.text
-        if check_user_exist(message.from_user.id) == False:
+        if user_manager.check_user_exist(message.from_user.id) == False:
             await bot.send_message(message.chat.id, "يجب اختيار المرحلة اولا!", reply_markup=get_user_markup(message.from_user.id))
         else:
             try:
-                await message.reply(get_hw(check_user_stage(message.from_user.id), data['day']), reply_markup=get_user_markup(message.from_user.id))
+                await message.reply(get_hw(user_manager.check_user_stage(message.from_user.id), data['day']), reply_markup=get_user_markup(message.from_user.id))
             except:
                 await message.reply("فشل عرض الواجب!")
     await state.finish()
@@ -315,153 +313,153 @@ async def view_by_day(message: types.Message, state=Viewhw):
 # create add HW command handler
 @dp.message_handler(lambda message: message.text == 'اضافة واجب 📝')
 async def HW_managment(message: types.Message):
-    await Manager_add_hw(message, bot)
+    await manager_menu_handler.Manager_add_hw(message, bot)
 
 # get the day from the user
 @dp.message_handler(state=AddHW.day)
 async def process_day(message: types.Message, state: FSMContext):
-    await Manager_get_day(message, state)
+    await manager_menu_handler.Manager_get_day(message, state)
 
 # get add hw message handler
 @dp.message_handler(state=AddHW.hw)
 async def process_age(message: types.Message, state: FSMContext):
-    await Manager_add_hw_command(message, state, bot)
+    await manager_menu_handler.Manager_add_hw_command(message, state, bot)
 
 
 # create delete HW command handler
 @dp.message_handler(lambda message: message.text == 'حذف واجب 📝')
 async def HW_managment(message: types.Message):
-    await Manager_del_hw(message, bot)
+    await manager_menu_handler.Manager_del_hw(message, bot)
 
 # get the day from the user
 @dp.message_handler(state=DelHW.day)
 async def process_day(message: types.Message, state: FSMContext):
-    await Manager_del_hw_command(message, state, bot)
+    await manager_menu_handler.Manager_del_hw_command(message, state, bot)
 
 # send announcement for a stage by manager
 @dp.message_handler(lambda message: message.text == 'أرسال اعلان 📢')
 async def anno_managment(message: types.Message):
-    await Manager_send_anno(message, bot)
+    await manager_menu_handler.Manager_send_anno(message, bot)
 
 # get the message from the manager and send it to the student
 @dp.message_handler(state=Anno.m)
 async def process_message(message: types.Message, state: FSMContext):
-    await Manager_send_anno_command(message, state, bot)
+    await manager_menu_handler.Manager_send_anno_command(message, state, bot)
 
 # create add manager command handler
 @dp.message_handler(lambda message: message.text == 'اضافة مشرف 💂')
 async def user_managment(message: types.Message):
-    await Add_manager(message, bot)
+    await admin_menu_handler.Add_manager(message, bot)
 
 # get the stage from the user
 @dp.message_handler(state=AddManager.stage)
 async def process_name(message: types.Message, state: FSMContext):
-    await Add_manager_get_stage(message, state)
+    await admin_menu_handler.Add_manager_get_stage(message, state)
 
 # get user id form the user and end data entry
 @dp.message_handler(lambda message: message.text.isdigit(), state=AddManager.uid)
 async def process_age(message: types.Message, state: FSMContext):
-    await Add_manager_get_uid_and_add(message, state, bot)
+    await admin_menu_handler.Add_manager_get_uid_and_add(message, state, bot)
 
 
 
 # create delete manager command handler
 @dp.message_handler(lambda message: message.text == 'حذف مشرف 💂')
 async def user_managment(message: types.Message):
-    await Delete_manager(message, bot)
+    await admin_menu_handler.Delete_manager(message, bot)
 
 # get the stage from the user
 @dp.message_handler(state=DelManager.stage)
 async def process_name(message: types.Message, state: FSMContext):
-    await Delete_manager_get_stage(message, state)
+    await admin_menu_handler.Delete_manager_get_stage(message, state)
 
 # get user id form the user and end data entry
 @dp.message_handler(lambda message: message.text.isdigit(), state=DelManager.uid)
 async def process_age(message: types.Message, state: FSMContext):
-    await Delete_manager_get_uid_and_del(message, state, bot)
+    await admin_menu_handler.Delete_manager_get_uid_and_del(message, state, bot)
 
 # send announcement for all stages by admin
 @dp.message_handler(lambda message: message.text == 'أرسال اعلان للجميع 📢')
 async def anno_managment(message: types.Message):
-    await Send_anno_4all(message, bot)
+    await admin_menu_handler.Send_anno_4all(message, bot)
 
 # get the message from the manager and send it to the student
 @dp.message_handler(state=AnnoAll.m)
 async def process_message(message: types.Message, state: FSMContext):
-    await Get_anno_msg_and_send(message, state, bot)
+    await admin_menu_handler.Get_anno_msg_and_send(message, state, bot)
 
 # create list of user id and username for all users 
 @dp.message_handler(lambda message: message.text == "عرض جميع المستخدمين 📋")
 async def make_list(message: types.Message):
-    await View_all_users(message, bot)
+    await admin_menu_handler.View_all_users(message, bot)
 
 # create admin permissions list getter 
 @dp.message_handler(lambda message: message.text == "عرض صلاحيات الادمن 👮")
 async def view_admin_permissions(message: types.Message):
-    await View_admin_list(message)
+    await main_menu_handler.View_admin_list(message)
 
 
 # create manager premissions list getter 
 @dp.message_handler(lambda message: message.text == "عرض صلاحيات المشرف 💂")
 async def view_man_permissions(message: types.Message):
-    await View_manager_list(message)
+    await main_menu_handler.View_manager_list(message)
 
 # create merge pdfs message handler
 # ask the user about the file name
 @dp.message_handler(lambda message: message.text == "دمج ملفات pdf")
 async def merge_file_name(message: types.Message, state: FSMContext):
-    await MergePdf_ask_file_name(message, state)
+    await tools_handler.MergePdf_ask_file_name(message, state)
 
 # get the file name
 @dp.message_handler(state=MergePdf.file_name)
 async def get_file_name(message: types.Message, state: FSMContext):
-    await MergePdf_get_file_name(message, state, bot)
+    await tools_handler.MergePdf_get_file_name(message, state, bot)
 
 
 # create merge pdfs message handler
 @dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergePdf)
 async def merge(message: types.Message, state: FSMContext):
-    await MergePdf_cancel_handler(message, state)
+    await tools_handler.MergePdf_cancel_handler(message, state)
 
 # create pdfs getter
 @dp.message_handler(state=MergePdf.temp, content_types=ContentTypes.DOCUMENT)
 async def pdf_getter(message: types.Message, state: FSMContext):
-    await MergePdf_get_files(message, state)
+    await tools_handler.MergePdf_get_files(message, state)
 
 # create merge pdf command handler
 @dp.message_handler(lambda message: message.text == "دمج" ,state=MergePdf.temp)
 async def merge_handler(message: types.Message, state: FSMContext):
-    await MergePdf_merge(message, state, bot)
+    await tools_handler.MergePdf_merge(message, state, bot)
 
 # create images to pdf message handler
 # ask the user about the name of the file
 @dp.message_handler(lambda message: message.text == "تحويل الصور الى pdf")
 async def merge(message: types.Message, state: FSMContext):
-    await Imgs2Pdf_file_name(message, state)
+    await tools_handler.Imgs2Pdf_file_name(message, state)
 
 
 # get the images from the user
 @dp.message_handler(state=MergeImages.file_name)
 async def merge(message: types.Message, state: FSMContext):
-    await Imgs2Pdf_get_images(message, state)
+    await tools_handler.Imgs2Pdf_get_images(message, state)
 
 
 # create cancel images merge to pdf message handler
 @dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergeImages)
 async def merge(message: types.Message, state: FSMContext):
-    await Imgs2Pdf_cancel_handler(message, state)
+    await tools_handler.Imgs2Pdf_cancel_handler(message, state)
 
 
 # create images downloader
 @dp.message_handler(state=MergeImages.temp, content_types=ContentTypes.DOCUMENT)
 async def images_downloader(message: types.Message, state: FSMContext):
-    await Imgs2Pdf_Imgs_downloader(message, state)
+    await tools_handler.Imgs2Pdf_Imgs_downloader(message, state)
     
 
 # create merge images command handler
 @dp.message_handler(lambda message: message.text == "دمج" ,state=MergeImages.temp)
 async def merge(message: types.Message, state: FSMContext):
-    await Imgs2Pdf_merge_handler(message, state, bot)
+    await tools_handler.Imgs2Pdf_merge_handler(message, state, bot)
 
 
 """
