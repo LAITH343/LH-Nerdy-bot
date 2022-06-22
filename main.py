@@ -4,7 +4,9 @@ import string
 import random
 import asyncio
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import ContentTypes
+from aiogram.types import ContentTypes, MenuButtonDefault
+from telegram import MenuButton
+
 from sources.s import answer
 from sources.pdfs_links import links
 from cmds.myinfo import myInfo
@@ -19,10 +21,7 @@ from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Vi
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, custom_markup
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
 from commands_handlers.unkown_message_handler import unknow_messages
-from commands_handlers import tools_handler 
-from commands_handlers import main_menu_handler 
-from commands_handlers import admin_menu_handler
-from commands_handlers import manager_menu_handler 
+from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler
 # handle heroku dotenv not found and fails to get the token
 try:
     from dotenv import load_dotenv
@@ -43,24 +42,18 @@ storage = MemoryStorage()
 bot = Bot(token=bot_token)
 dp = Dispatcher(bot, storage=storage)
 
-# create pdf files menu
-pdf_markup = custom_markup(["منطق رقمي", "برمجة سي بلس بلس 2", "اساسيات البرمجة", "الرجوع للقائمة الرئيسية 🏠"])
 
 # create s exams menu 
 s_markup = custom_markup(["جدول المرحلة الاولى", "جدول المرحلة الثانية", "جدول المرحلة الثالثة", "جدول المرحلة الرابعة", "الرجوع للقائمة الرئيسية 🏠"])
 
-# create hw menu 
-hw_markup = custom_markup(["اختيار يوم 📋","عرض واجبات الاسبوع 📖","الرجوع للقائمة الرئيسية 🏠"])
 
 # create stages menu 
 stages_markup = custom_markup(["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة"])
 
-# create photos menu 
-pic_markup = custom_markup(["شعار القسم","شعار الكلية","الرجوع للقائمة الرئيسية 🏠"])
 
 
 # create compress markup
-compress_markup = custom_markup(["الغاء الضغط"])
+# compress_markup = custom_markup(["الغاء الضغط"])
 
 # set new user stage
 @dp.message_handler(lambda message: message.text == "مرحلة اولى")
@@ -120,10 +113,7 @@ async def start_message(message: types.Message):
 # create pdf menu 
 @dp.message_handler(lambda message: message.text == "ملازم 📚")
 async def pdf_message(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await bot.send_message(message.chat.id, "اختر الملف من القائمة", reply_markup=pdf_markup)
+    await main_menu_handler.View_pdf_menu(message, bot)
 
 #create my info message
 @dp.message_handler(lambda message: message.text == "معلوماتي ❓")
@@ -133,8 +123,7 @@ async def my_info_message(message: types.Message):
 # create exit message handler
 @dp.message_handler(lambda message: message.text == "أغلاق ❌")
 async def cancel_message(message: types.Message):
-    cmarkup = types.ReplyKeyboardRemove()
-    await message.reply("تم أغلاق القائمة\nلعرض القائمة من جديد ارسل بدء أو اضغط على /start", reply_markup=cmarkup)
+    await message.reply("تم أغلاق القائمة\nلعرض القائمة من جديد ارسل بدء أو اضغط على /start", reply_markup=types.ReplyKeyboardRemove())
 
 # create collage logo message handler
 @dp.message_handler(lambda message: message.text == "شعار الكلية")
@@ -235,23 +224,8 @@ async def pdf_message(message: types.Message):
 # create hw messages menu 
 @dp.message_handler(lambda message: message.text == "عرض الواجبات 📃")
 async def view_hw(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await bot.send_message(message.chat.id, "اختر اليوم من القائمة", reply_markup=hw_markup)
+    await main_menu_handler.View_hw_menu(message, bot)
 
-
-# create hw all week message handler
-@dp.message_handler(lambda message: message.text == "عرض واجبات الاسبوع 📖")
-async def view_hw(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        stage = user_manager.check_user_stage(message.from_user.id)
-        if stage == False:
-            await message.reply("انت لا تنتمي الى مرحلة")
-        else:
-            await message.reply(get_hw_allweek(stage))
 
 # create delete user command handler
 @dp.message_handler(commands='deluser')
@@ -269,10 +243,7 @@ async def user_managment(message: types.Message):
 # create photos menu stage
 @dp.message_handler(lambda message: message.text == "الصور 📷")
 async def pics(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await bot.send_message(message.chat.id, "اختر من الصور", reply_markup=pic_markup)
+    await main_menu_handler.View_pic_menu(message, bot)
 
 
 # create input canceler 
@@ -288,27 +259,19 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     await state.finish()
     await message.reply('تم الغاء الادخال', reply_markup=get_user_markup(message.from_user.id))
 
+# create hw all week message handler
+@dp.message_handler(lambda message: message.text == "عرض واجبات الاسبوع 📖")
+async def view_hw(message: types.Message):
+    await view_hw_handler.View_hw_all_command(message, bot)
+
 # create view hw message handler
 @dp.message_handler(lambda message: message.text == "اختيار يوم 📋")
 async def select_hw(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await message.reply("يجب اختيار المرحلة اولا!", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        await Viewhw.day.set()
-        await bot.send_message(message.chat.id, "اختر اليوم ", reply_markup=custom_markup(["الاحد","الاثنين","الثلاثاء","الاربعاء","الخميس","الغاء الادخال"]))
+    await view_hw_handler.View_hw_select_day(message, bot)
 
 @dp.message_handler(state=Viewhw.day)
 async def view_by_day(message: types.Message, state=Viewhw):
-    async with state.proxy() as data:
-        data['day'] = message.text
-        if user_manager.check_user_exist(message.from_user.id) == False:
-            await bot.send_message(message.chat.id, "يجب اختيار المرحلة اولا!", reply_markup=get_user_markup(message.from_user.id))
-        else:
-            try:
-                await message.reply(get_hw(user_manager.check_user_stage(message.from_user.id), data['day']), reply_markup=get_user_markup(message.from_user.id))
-            except:
-                await message.reply("فشل عرض الواجب!")
-    await state.finish()
+    await view_hw_handler.View_hw_command(message, state, bot)
 
 # create add HW command handler
 @dp.message_handler(lambda message: message.text == 'اضافة واجب 📝')
