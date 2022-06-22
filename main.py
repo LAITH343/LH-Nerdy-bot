@@ -22,6 +22,7 @@ from commands_handlers.unkown_message_handler import unknow_messages
 from commands_handlers.tools_handler import Imgs2Pdf_file_name, Imgs2Pdf_get_images, Imgs2Pdf_Imgs_downloader, Imgs2Pdf_merge_handler, Imgs2Pdf_cancel_handler, MergePdf_ask_file_name, MergePdf_get_file_name, MergePdf_cancel_handler, MergePdf_get_files, MergePdf_merge
 from commands_handlers.main_menu_handler import View_manager_list, View_admin_list
 from commands_handlers.admin_menu_handler import View_all_users, Send_anno_4all, Get_anno_msg_and_send, Delete_manager, Delete_manager_get_stage, Delete_manager_get_uid_and_del, Add_manager, Add_manager_get_stage, Add_manager_get_uid_and_add
+from commands_handlers.manager_menu_handler import Manager_del_hw, Manager_del_hw_command, Manager_add_hw, Manager_get_day, Manager_add_hw_command, Manager_send_anno, Manager_send_anno_command
 
 
 # handle heroku dotenv not found and fails to get the token
@@ -58,9 +59,6 @@ stages_markup = custom_markup(["مرحلة اولى","مرحلة ثانية","م
 
 # create photos menu 
 pic_markup = custom_markup(["شعار القسم","شعار الكلية","الرجوع للقائمة الرئيسية 🏠"])
-
-# create hw day input markup
-hw_day_input_markup = custom_markup(["الاحد","الاثنين","الثلاثاء","الاربعاء","الخميس","الغاء الادخال"])
 
 
 # create compress markup
@@ -292,38 +290,6 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     await state.finish()
     await message.reply('تم الغاء الادخال', reply_markup=get_user_markup(message.from_user.id))
 
-
-# create add HW command handler
-@dp.message_handler(lambda message: message.text == 'اضافة واجب 📝')
-async def HW_managment(message: types.Message):
-    if get_manager_stage(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        await AddHW.day.set()
-        await message.reply("اختر اليوم", reply_markup=hw_day_input_markup)
-
-# get the day from the user
-@dp.message_handler(state=AddHW.day)
-async def process_day(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['day'] = message.text
-
-    await AddHW.next()
-    await message.reply("ارسل الواجب", reply_markup=cancel_input_markup)
-
-# get add hw message handler
-@dp.message_handler(state=AddHW.hw)
-async def process_age(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['hw'] = message.text
-        try:
-            if add_hw(get_manager_stage(message.from_user.id), data['day'], data['hw']) == True:
-                await message.reply("تم الاضافة بنجاح", reply_markup=get_user_markup(message.from_user.id))
-        except:
-            await bot.send_message(message.chat.id, "حدث خطأ ما\nيرجى التحقق من المدخلات أو اذا كان لديك الصلاحيات لتنفيذ الاجراء", reply_markup=get_user_markup(message.from_user.id))
-    await state.finish()
-
-
 # create view hw message handler
 @dp.message_handler(lambda message: message.text == "اختيار يوم 📋")
 async def select_hw(message: types.Message):
@@ -331,7 +297,7 @@ async def select_hw(message: types.Message):
         await message.reply("يجب اختيار المرحلة اولا!", reply_markup=get_user_markup(message.from_user.id))
     else:
         await Viewhw.day.set()
-        await bot.send_message(message.chat.id, "اختر اليوم ", reply_markup=hw_day_input_markup)
+        await bot.send_message(message.chat.id, "اختر اليوم ", reply_markup=custom_markup(["الاحد","الاثنين","الثلاثاء","الاربعاء","الخميس","الغاء الادخال"]))
 
 @dp.message_handler(state=Viewhw.day)
 async def view_by_day(message: types.Message, state=Viewhw):
@@ -346,26 +312,41 @@ async def view_by_day(message: types.Message, state=Viewhw):
                 await message.reply("فشل عرض الواجب!")
     await state.finish()
 
+# create add HW command handler
+@dp.message_handler(lambda message: message.text == 'اضافة واجب 📝')
+async def HW_managment(message: types.Message):
+    await Manager_add_hw(message, bot)
+
+# get the day from the user
+@dp.message_handler(state=AddHW.day)
+async def process_day(message: types.Message, state: FSMContext):
+    await Manager_get_day(message, state)
+
+# get add hw message handler
+@dp.message_handler(state=AddHW.hw)
+async def process_age(message: types.Message, state: FSMContext):
+    await Manager_add_hw_command(message, state, bot)
+
+
 # create delete HW command handler
 @dp.message_handler(lambda message: message.text == 'حذف واجب 📝')
 async def HW_managment(message: types.Message):
-    if get_manager_stage(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        await DelHW.day.set()
-        await message.reply("اختر اليوم", reply_markup=hw_day_input_markup)
+    await Manager_del_hw(message, bot)
 
 # get the day from the user
 @dp.message_handler(state=DelHW.day)
 async def process_day(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['day'] = message.text
-        stage = get_manager_stage(message.from_user.id)
-        if add_hw(stage, data['day'], "لا شيء") == True:
-            await message.reply("تم حذف الواجب", reply_markup=get_user_markup(message.from_user.id))
-        else:
-            await bot.send_message(message.chat.id, "فشل حذف الواجب", reply_markup=get_user_markup(message.from_user.id))
-    await state.finish()
+    await Manager_del_hw_command(message, state, bot)
+
+# send announcement for a stage by manager
+@dp.message_handler(lambda message: message.text == 'أرسال اعلان 📢')
+async def anno_managment(message: types.Message):
+    await Manager_send_anno(message, bot)
+
+# get the message from the manager and send it to the student
+@dp.message_handler(state=Anno.m)
+async def process_message(message: types.Message, state: FSMContext):
+    await Manager_send_anno_command(message, state, bot)
 
 # create add manager command handler
 @dp.message_handler(lambda message: message.text == 'اضافة مشرف 💂')
@@ -398,29 +379,6 @@ async def process_name(message: types.Message, state: FSMContext):
 @dp.message_handler(lambda message: message.text.isdigit(), state=DelManager.uid)
 async def process_age(message: types.Message, state: FSMContext):
     await Delete_manager_get_uid_and_del(message, state, bot)
-
-# send announcement for a stage by manager
-@dp.message_handler(lambda message: message.text == 'أرسال اعلان 📢')
-async def anno_managment(message: types.Message):
-    if get_manager_stage(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        await Anno.m.set()
-        await message.reply("ارسل الرسالة التي تريد اعلانها", reply_markup=cancel_input_markup)
-
-# get the message from the manager and send it to the student
-@dp.message_handler(state=Anno.m)
-async def process_message(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['m'] = f"أعلان  📢 بواسطة: @{message.from_user.username}\n\n"
-        data['m'] += message.text
-        try:
-            for user in get_users_uid(message.from_user.id):
-                await bot.send_message(user, data['m'])
-            await message.reply("تم ارسال الاعلان بنجاح", reply_markup=get_user_markup(message.from_user.id))
-        except:
-            await message.reply("فشل ارسال الاعلان", reply_markup=get_user_markup(message.from_user.id))
-    await state.finish()
 
 # send announcement for all stages by admin
 @dp.message_handler(lambda message: message.text == 'أرسال اعلان للجميع 📢')
