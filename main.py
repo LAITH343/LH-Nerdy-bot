@@ -14,7 +14,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, Del_File
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, custom_markup
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
 from commands_handlers.unkown_message_handler import unknow_messages
@@ -115,6 +115,25 @@ async def start_message(message: types.Message):
 async def view_books(message: types.Message):
     await main_menu_handler.Books_View(message)
 
+# create delete book canceler
+@dp.message_handler(lambda message: message.text == "الغاء الحذف" ,state=Del_File)
+async def cancel_del_book(message: types.Message, state: FSMContext):
+    if user_manager.get_manager_stage(message.from_user.id) == False:
+        await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await state.finish()
+        await message.answer("تم الالغاء بنجاح", reply_markup=get_user_markup(message.from_user.id))
+
+# create delete book 
+@dp.message_handler(lambda message: message.text == "حذف كتاب ❌")
+async def del_book_handler(message: types.Message):
+    await manager_menu_handler.del_book(message)
+
+# create delete book by name handler
+@dp.message_handler(state=Del_File.temp)
+async def del_book_command_handler(message: types.Message, state: FSMContext):
+    await manager_menu_handler.del_book_command(message, state)
+
 # create upload book handler
 stage_translate = {
         "1": "stage1",
@@ -147,17 +166,17 @@ async def cancel_handler(message: types.Message, state: FSMContext):
 # create add book 
 @dp.message_handler(lambda message: message.text == "اضافة كتاب 📕")
 async def pdf_message(message: types.Message):
-    await main_menu_handler.Add_book(message, bot)
+    await manager_menu_handler.Add_book(message, bot)
 
 # get file name
 @dp.message_handler(state=AddNewFile.file_name)
 async def Add_file_get_name(message: types.Message, state: FSMContext):
-    await main_menu_handler.Add_book_get_file_name(message, state, bot)
+    await manager_menu_handler.Add_book_get_file_name(message, state, bot)
 
 # download file
 @dp.message_handler(state=AddNewFile.file_path, content_types=ContentTypes.DOCUMENT)
 async def Add_file_download(message: types.Message, state: FSMContext):
-    await main_menu_handler.Add_book_command(message, state, bot)
+    await manager_menu_handler.Add_book_command(message, state, bot)
 
 #create my info message
 @dp.message_handler(lambda message: message.text == "معلوماتي ❓")

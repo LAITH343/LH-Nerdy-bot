@@ -1,5 +1,6 @@
 import yaml 
 import asyncio
+from os import system
 
 
 async def add_file(stage, name, path):
@@ -24,13 +25,15 @@ def get_files_list(stage):
 
 	return files_list
 
-def del_file(stage, name):
+async def del_file(stage, name):
 	with open("storage/links.yml", 'r') as l:
 		link = yaml.safe_load(l)
 		index = link[stage]["book_name"].index(name)
+		file_be_del = link[stage]["book_path"][index]
 		link[stage]["book_name"].pop(index)
 		link[stage]["book_path"].pop(index)
 	if link:
+		system(f"rm -f {file_be_del}")
 		with open("storage/links.yml", 'w') as wd:
 			yaml.safe_dump(link, wd)
 	return True

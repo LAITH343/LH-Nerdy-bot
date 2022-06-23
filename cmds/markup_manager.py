@@ -28,10 +28,9 @@ def admin_markup():
 
 def manager_markup():
 	man_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-	man_markup.add("اضافة واجب 📝")
-	man_markup.add("حذف واجب 📝")
+	man_markup.add("اضافة واجب 📝", "حذف واجب 📝")
+	man_markup.add("اضافة كتاب 📕", "حذف كتاب ❌")
 	man_markup.add("أرسال اعلان 📢")
-	man_markup.add("اضافة كتاب 📕")
 	man_markup.add("الرجوع للقائمة الرئيسية 🏠")
 	return man_markup
 
@@ -46,4 +45,11 @@ def books_markup(options: list):
 	for option in options:
 		custom.add(option)
 	custom.add("الرجوع للقائمة الرئيسية 🏠")
+	return custom
+
+def del_books_markup(options: list):
+	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+	for option in options:
+		custom.add(option)
+	custom.add("الغاء الحذف")
 	return custom

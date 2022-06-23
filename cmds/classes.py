@@ -41,6 +41,10 @@ class AddNewFile(StatesGroup):
 	file_name = State()
 	file_path = State()
 
+class Del_File(StatesGroup):
+	temp = State()
+
+
 # class CompressPdf(StatesGroup):
 # 	folder = State()
 
