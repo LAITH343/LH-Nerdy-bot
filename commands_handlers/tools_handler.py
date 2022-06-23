@@ -39,14 +39,23 @@ async def Imgs2Pdf_cancel_handler(message, state):
 
 async def Imgs2Pdf_Imgs_downloader(message, state):
 	async with state.proxy() as data:
-	    if document := message.document:
-	        await document.download(
-	            destination_file=f"{data['folder']}/{document.file_name}",
-	        )
-	        await message.reply("تم تنزيل الملف")
-	        with open((data['folder']+"/files"), 'a+') as fls:
-	            fls.write(f"{data['folder']}/{document.file_name};")
-	            fls.close()
+		if document := message.document:
+			await document.download(destination_file=f"{data['folder']}/{document.file_name}",)
+			await message.reply("تم تنزيل الملف")
+			with open((data['folder'] + "/files"), 'a+') as fls:
+				fls.write(f"{data['folder']}/{document.file_name};")
+				fls.close()
+
+		elif photo := message.photo:
+			rand_name = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+			await photo[-1].download(destination_file=f"{data['folder']}/{rand_name}",)
+			await message.reply("تم تنزيل الملف")
+			with open((data['folder'] + "/files"), 'a+') as fls:
+				fls.write(f"{data['folder']}/{rand_name};")
+				fls.close()
+		else:
+			await message.answer("الرجاء ارسال صورة")
+
 
 async def Imgs2Pdf_merge_handler(message, state, bot):
 	async with state.proxy() as data:

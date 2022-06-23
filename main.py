@@ -456,17 +456,15 @@ async def merge(message: types.Message, state: FSMContext):
 async def merge(message: types.Message, state: FSMContext):
     await tools_handler.Imgs2Pdf_get_images(message, state)
 
-
-# create images downloader
-@dp.message_handler(state=MergeImages.temp, content_types=ContentTypes.DOCUMENT)
-async def images_downloader(message: types.Message, state: FSMContext):
-    await tools_handler.Imgs2Pdf_Imgs_downloader(message, state)
-    
-
 # create merge images command handler
 @dp.message_handler(lambda message: message.text == "دمج" ,state=MergeImages.temp)
 async def merge(message: types.Message, state: FSMContext):
     await tools_handler.Imgs2Pdf_merge_handler(message, state, bot)
+
+# create images downloader
+@dp.message_handler(state=MergeImages.temp, content_types=ContentTypes.ANY)
+async def images_downloader(message: types.Message, state: FSMContext):
+    await tools_handler.Imgs2Pdf_Imgs_downloader(message, state)
 
 
 """
