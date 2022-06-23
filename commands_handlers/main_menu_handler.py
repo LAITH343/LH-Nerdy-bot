@@ -53,7 +53,7 @@ async def Add_book_get_file_name(message, state, bot):
 		data["file_name"] = message.text
 
 	await AddNewFile.next()
-	await bot.send_message(message.chat.id, "ارسل الملف", reply_markup=custom_markup(["الغاء الاضافة", "الغاء الاضافة"]))
+	await bot.send_message(message.chat.id, "ارسل الملف", reply_markup=custom_markup(["الغاء الاضافة"]))
 
 async def Add_book_command(message, state, bot):
 	stage_translate = {
