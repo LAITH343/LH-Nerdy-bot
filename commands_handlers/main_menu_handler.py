@@ -2,7 +2,7 @@ import asyncio
 from aiogram import types
 from cmds.markup_manager import manager_markup, admin_markup, get_user_markup, custom_markup, books_markup, extra_file_markup
 from cmds.user_manager import check_admin, get_manager_stage, check_user_exist, get_manager_stage, check_user_stage
-from cmds.classes import AddNewFile
+from cmds.classes import AddNewFile, GetBook, GetFile
 from cmds.books_manager import add_file, get_files_list, get_extra_files_list
 
 async def View_manager_list(message):
@@ -52,6 +52,7 @@ async def Books_View(message):
 		'3': "stage3",
 		'4': "stage4"
 	}
+		await GetBook.temp.set()
 		await message.answer("اختر كاتب من القائمة", reply_markup=books_markup(get_files_list(stage_translate[check_user_stage(message.from_user.id)])))
 
 async def Extra_file_View(message):
@@ -64,4 +65,5 @@ async def Extra_file_View(message):
 		'3': "stage3",
 		'4': "stage4"
 	}
+		await GetFile.temp.set()
 		await message.answer("اختر كاتب من القائمة", reply_markup=extra_file_markup(get_extra_files_list(stage_translate[check_user_stage(message.from_user.id)])))

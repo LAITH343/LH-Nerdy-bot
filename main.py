@@ -14,7 +14,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, Del_File, Selcet_Stage, AddNewExtraFile, Del_Extra_File
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, Del_File, Selcet_Stage, AddNewExtraFile, Del_Extra_File, GetBook, GetFile
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, custom_markup
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
 from commands_handlers.unkown_message_handler import unknow_messages
@@ -130,10 +130,11 @@ stage_translate = {
         '3': "stage3",
         '4': "stage4"
     }
-@dp.message_handler(lambda message: message.text in get_files_list(stage_translate[user_manager.check_user_stage(message.from_user.id)]))
-async def upload_book(message: types.Message):
+@dp.message_handler(lambda message: message.text in get_files_list(stage_translate[user_manager.check_user_stage(message.from_user.id)]), state=GetBook.temp)
+async def upload_book(message: types.Message, state: FSMContext):
     await message.answer("جاري رفع الكتاب", reply_markup=get_user_markup(message.from_user.id))
     await bot.send_document(message.chat.id, document=open(get_file_by_name(stage_translate[user_manager.check_user_stage(message.from_user.id)], message.text), 'rb'))
+    await state.finish()
 
 # create upload extra handler
 stage_translate = {
@@ -142,10 +143,11 @@ stage_translate = {
         '3': "stage3",
         '4': "stage4"
     }
-@dp.message_handler(lambda message: message.text in get_extra_files_list(stage_translate[user_manager.check_user_stage(message.from_user.id)]))
-async def upload_book(message: types.Message):
+@dp.message_handler(lambda message: message.text in get_extra_files_list(stage_translate[user_manager.check_user_stage(message.from_user.id)]), state=GetFile.temp)
+async def upload_book(message: types.Message, state: FSMContext):
     await message.answer("جاري رفع الملف", reply_markup=get_user_markup(message.from_user.id))
     await bot.send_document(message.chat.id, document=open(get_extra_file_by_name(stage_translate[user_manager.check_user_stage(message.from_user.id)], message.text), 'rb'))
+    await state.finish()
 
 # create tools option at main meun 
 @dp.message_handler(lambda message: message.text == "أدوات 🧰")

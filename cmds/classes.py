@@ -54,6 +54,12 @@ class Del_Extra_File(StatesGroup):
 class Selcet_Stage(StatesGroup):
 	stage = State()
 
+class GetBook(StatesGroup):
+	temp = State()
+
+class GetFile(StatesGroup):
+	temp = State()
+
 # class CompressPdf(StatesGroup):
 # 	folder = State()
 
