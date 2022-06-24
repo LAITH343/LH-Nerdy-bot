@@ -105,7 +105,7 @@ async def del_book_command_handler(message: types.Message, state: FSMContext):
     await manager_menu_handler.del_book_command(message, state)
 
 # create delete extra file canceler
-@dp.message_handler(lambda message: message.text == "الغاء حذف الملف" ,state=Del_File)
+@dp.message_handler(lambda message: message.text == "الغاء حذف الملف" ,state=Del_Extra_File)
 async def cancel_del_book(message: types.Message, state: FSMContext):
     if user_manager.get_manager_stage(message.from_user.id) == False:
         await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
