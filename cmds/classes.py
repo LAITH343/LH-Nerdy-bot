@@ -44,6 +44,8 @@ class AddNewFile(StatesGroup):
 class Del_File(StatesGroup):
 	temp = State()
 
+class Selcet_Stage(StatesGroup):
+	stage = State()
 
 # class CompressPdf(StatesGroup):
 # 	folder = State()

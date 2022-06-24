@@ -1,5 +1,6 @@
 import yaml
 
+
 def check_admin(uid):
 	with open('storage/users_info.yml', 'r') as ucfg:
 		cfg = yaml.safe_load(ucfg)
@@ -22,6 +23,7 @@ def check_user_exist(uid):
 	else:
 		return False
 	cfg.close()
+
 
 def check_user_stage(uid):
 	with open('storage/users_info.yml', 'r') as ucfg:
@@ -81,11 +83,10 @@ def get_manager_stage(uid):
 
 
 
-def add_user(stage, uid, username):
+def add_user(stage, uid):
 	with open('storage/users_info.yml', 'r') as ucfg:
 		cfg = yaml.safe_load(ucfg)
 		cfg['users'][stage].append(uid)
-		cfg['usernames'][stage].append(username)
 	if cfg:
 		with open('storage/users_info.yml', 'w') as ucfg:
 			yaml.safe_dump(cfg, ucfg)
@@ -140,42 +141,30 @@ def get_users_uid(uid):
 	ul.remove(uid)
 	return ul
 
-def get_users_uid_all(uid):
+def add_username(stage, uid, username):
 	with open('storage/users_info.yml', 'r') as ucfg:
 		cfg = yaml.safe_load(ucfg)
-		stage1 = cfg['users']['stage1']
-		stage2 = cfg['users']['stage2']
-		stage3 = cfg['users']['stage3']
-		stage4 = cfg['users']['stage4']
-	ul = []
-	
-	for i in stage1:
-		ul.append(i)
-	for i in stage2:
-		ul.append(i)
-	for i in stage3:
-		ul.append(i)
-	for i in stage4:
-		ul.append(i)
-	# ul.remove(uid)
-	return ul
+		cfg['usernames'][stage].append(str(uid)+";"+username)
+	if cfg:
+		with open('storage/users_info.yml', 'w') as fd:
+			yaml.safe_dump(cfg, fd)
+	return True
 
-def get_all_users_username():
+def get_all_usernames():
 	with open('storage/users_info.yml', 'r') as ucfg:
 		cfg = yaml.safe_load(ucfg)
-		ustage1 = cfg['usernames']['stage1']
-		ustage2 = cfg['usernames']['stage2']
-		ustage3 = cfg['usernames']['stage3']
-		ustage4 = cfg['usernames']['stage4']
-	usernames = []
-	
-	for u in ustage1:
-		usernames.append(u)
-	for u in ustage2:
-		usernames.append(u)
-	for u in ustage3:
-		usernames.append(u)
-	for u in ustage4:
-		usernames.append(u)
-	# ul.remove(uid)
-	return usernames
+		stage1 = cfg['usernames']['stage1']
+		stage2 = cfg['usernames']['stage2']
+		stage3 = cfg['usernames']['stage3']
+		stage4 = cfg['usernames']['stage4']
+
+	userlist = []
+	for user in stage1:
+		userlist.append(user)
+	for user in stage2:
+		userlist.append(user)
+	for user in stage3:
+		userlist.append(user)
+	for user in stage4:
+		userlist.append(user)
+	return userlist

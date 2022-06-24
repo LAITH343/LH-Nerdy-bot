@@ -14,11 +14,11 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, Del_File
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, Del_File, Selcet_Stage
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, custom_markup
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
 from commands_handlers.unkown_message_handler import unknow_messages
-from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler
+from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler, new_user_handler
 from cmds.books_manager import get_files_list, get_file_by_name
 
 
@@ -47,54 +47,13 @@ dp = Dispatcher(bot, storage=storage)
 s_markup = custom_markup(["جدول المرحلة الاولى", "جدول المرحلة الثانية", "جدول المرحلة الثالثة", "جدول المرحلة الرابعة", "الرجوع للقائمة الرئيسية 🏠"])
 
 
-# create stages menu 
-stages_markup = custom_markup(["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة"])
-
-
-
 # create compress markup
 # compress_markup = custom_markup(["الغاء الضغط"])
 
-# set new user stage
-@dp.message_handler(lambda message: message.text == "مرحلة اولى")
-async def stage_select(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == True:
-        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        if user_manager.add_user("stage1", message.from_user.id, message.from_user.username) == True:
-            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
-        else:
-            await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
-
-@dp.message_handler(lambda message: message.text == "مرحلة ثانية")
-async def stage_select(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == True:
-        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        if user_manager.add_user("stage2", message.from_user.id, message.from_user.username) == True:
-            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
-        else:
-            await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
-
-@dp.message_handler(lambda message: message.text == "مرحلة ثالثة")
-async def stage_select(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == True:
-        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        if user_manager.add_user("stage3", message.from_user.id, message.from_user.username) == True:
-            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
-        else:
-            await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
-
-@dp.message_handler(lambda message: message.text == "مرحلة رابعة")
-async def stage_select(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == True:
-        await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        if user_manager.add_user("stage4", message.from_user.id, message.from_user.username) == True:
-            await bot.send_message(message.chat.id, "تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
-        else:
-            await bot.send_message(message.chat.id, "فشل الاضافة", reply_markup=stages_markup)
+# add new user
+@dp.message_handler(state=Selcet_Stage.stage)
+async def Add_new_user(message: types.Message, state: FSMContext):
+    await new_user_handler.Add_user(message, state)
     
 # create select stage menu 
 @dp.message_handler(lambda message: message.text == "اختيار المرحلة")
@@ -102,13 +61,18 @@ async def stage_select_menu(message: types.Message):
     if user_manager.check_user_exist(message.from_user.id) == True:
         await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
-        await bot.send_message(message.chat.id, "اختر المرحلة\nملاحظة مهمة: يمكنك اختيار المرحلة لمرة واحدة فقط", reply_markup=stages_markup)
+        await new_user_handler.Select_stage(message)
 
 
 # create start message/command handler
 @dp.message_handler(lambda message: message.text in ["start", "بدء", "/start"])
 async def start_message(message: types.Message):
     await bot.send_message(message.chat.id, "أهلا بك في البوت", reply_markup=get_user_markup(message.from_user.id))
+
+# create exit message handler
+@dp.message_handler(lambda message: message.text == "أغلاق ❌")
+async def cancel_message(message: types.Message):
+    await message.answer("تم أغلاق القائمة\nلعرض القائمة من جديد ارسل بدء أو اضغط على /start", reply_markup=types.ReplyKeyboardRemove())
 
 # create view book handler
 @dp.message_handler(lambda message: message.text == "الكتب 📚")
@@ -182,11 +146,6 @@ async def Add_file_download(message: types.Message, state: FSMContext):
 @dp.message_handler(lambda message: message.text == "معلوماتي ❓")
 async def my_info_message(message: types.Message):
     await message.reply(myInfo(message))
-
-# create exit message handler
-@dp.message_handler(lambda message: message.text == "أغلاق ❌")
-async def cancel_message(message: types.Message):
-    await message.answer("تم أغلاق القائمة\nلعرض القائمة من جديد ارسل بدء أو اضغط على /start", reply_markup=types.ReplyKeyboardRemove())
 
 # create collage logo message handler
 @dp.message_handler(lambda message: message.text == "شعار الكلية")

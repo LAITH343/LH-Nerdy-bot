@@ -1,6 +1,6 @@
 import asyncio
 from aiogram import types
-from cmds.user_manager import get_users_uid_all, get_all_users_username, check_admin, del_manager, add_manager
+from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager
 from cmds.markup_manager import get_user_markup, custom_markup
 from cmds.classes import AnnoAll, AddManager, DelManager
 
@@ -8,12 +8,9 @@ async def View_all_users(message, bot):
 	if check_admin(message.from_user.id) != True:
 	    await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
 	else:
-	    uids = get_users_uid_all(message.from_user.id)
-	    usernames = get_all_users_username()
-	    message_text = ""
-	    for (uid, username) in zip(uids, usernames):
-	        message_text += f"أيدي المستخدم {uid}   يوزر المستخدم @{username}\n"
-	    await message.reply(message_text, reply_markup=get_user_markup(message.from_user.id))
+		for key in get_all_usernames():
+			uid, username = key.split(";")
+			await message.reply(f"أيدي المستخدم {uid}   يوزر المستخدم @{username}", reply_markup=get_user_markup(message.from_user.id))
 
 async def Send_anno_4all(message, bot):
 	if check_admin(message.from_user.id) == False:
