@@ -52,7 +52,8 @@ async def Books_View(message):
 		'3': "stage3",
 		'4': "stage4"
 	}
-		await GetBook.temp.set()
+		if get_files_list(stage_translate[check_user_stage(message.from_user.id)]) != []:
+			await GetBook.temp.set()
 		await message.answer("اختر كاتب من القائمة", reply_markup=books_markup(get_files_list(stage_translate[check_user_stage(message.from_user.id)])))
 
 async def Extra_file_View(message):
@@ -65,5 +66,6 @@ async def Extra_file_View(message):
 		'3': "stage3",
 		'4': "stage4"
 	}
-		await GetFile.temp.set()
+		if get_extra_files_list(stage_translate[check_user_stage(message.from_user.id)]) != []:
+			await GetFile.temp.set()
 		await message.answer("اختر كاتب من القائمة", reply_markup=extra_file_markup(get_extra_files_list(stage_translate[check_user_stage(message.from_user.id)])))
