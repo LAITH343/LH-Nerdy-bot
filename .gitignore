@@ -7,7 +7,12 @@ cache/*
 !cache/.gitkeep
 commands_handlers/__pycache__/
 storage/books/
+storage/extra/
 !storage/books/stage1/.gitkeep
 !storage/books/stage2/.gitkeep
 !storage/books/stage3/.gitkeep
 !storage/books/stage4/.gitkeep
+!storage/extra/stage1/.gitkeep
+!storage/extra/stage2/.gitkeep
+!storage/extra/stage3/.gitkeep
+!storage/extra/stage4/.gitkeep

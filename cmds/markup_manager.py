@@ -7,7 +7,7 @@ def get_user_markup(uid):
 		main_markup.add("الكتب 📚", "عرض الواجبات 📃")
 		# main_markup.add("الصور 📷")
 		main_markup.add("أدوات 🧰", "معلوماتي ❓")
-		# main_markup.add("ضغط ملف pdf (تقليل حجم)")
+		main_markup.add("الملفات 📎")
 		if get_manager_stage(uid) != False:
 			main_markup.add("عرض صلاحيات المشرف 💂")
 		if check_admin(uid) == True:
@@ -30,6 +30,7 @@ def manager_markup():
 	man_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	man_markup.add("اضافة واجب 📝", "حذف واجب 📝")
 	man_markup.add("اضافة كتاب 📕", "حذف كتاب ❌")
+	man_markup.add("اضافة ملف 📎", "حذف ملف ❌")
 	man_markup.add("أرسال اعلان 📢")
 	man_markup.add("الرجوع للقائمة الرئيسية 🏠")
 	return man_markup
@@ -51,5 +52,25 @@ def del_books_markup(options: list):
 	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	for option in options:
 		custom.add(option)
-	custom.add("الغاء الحذف")
+	if options == []:
+		custom.add("الرجوع للقائمة الرئيسية 🏠")
+	else:
+		custom.add("الغاء الحذف")
+	return custom
+
+def extra_file_markup(options: list):
+	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+	for option in options:
+		custom.add(option)
+	custom.add("الرجوع للقائمة الرئيسية 🏠")
+	return custom
+
+def del_extra_file_markup(options: list):
+	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+	for option in options:
+		custom.add(option)
+	if options == []:
+		custom.add("الرجوع للقائمة الرئيسية 🏠")
+	else:
+		custom.add("الغاء حذف الملف")
 	return custom

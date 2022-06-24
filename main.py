@@ -14,12 +14,12 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, Del_File, Selcet_Stage
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, Del_File, Selcet_Stage, AddNewExtraFile, Del_Extra_File
 from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, custom_markup
 from cmds.pdf_manager import merge_pdfs, images_to_pdf
 from commands_handlers.unkown_message_handler import unknow_messages
 from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler, new_user_handler
-from cmds.books_manager import get_files_list, get_file_by_name
+from cmds.books_manager import get_files_list, get_file_by_name, get_extra_file_by_name, get_extra_files_list
 
 
 # handle heroku dotenv not found and fails to get the token
@@ -79,6 +79,12 @@ async def cancel_message(message: types.Message):
 async def view_books(message: types.Message):
     await main_menu_handler.Books_View(message)
 
+# create view extra files handler
+@dp.message_handler(lambda message: message.text == "الملفات 📎")
+async def view_books(message: types.Message):
+    await main_menu_handler.Extra_file_View(message)
+
+
 # create delete book canceler
 @dp.message_handler(lambda message: message.text == "الغاء الحذف" ,state=Del_File)
 async def cancel_del_book(message: types.Message, state: FSMContext):
@@ -98,6 +104,25 @@ async def del_book_handler(message: types.Message):
 async def del_book_command_handler(message: types.Message, state: FSMContext):
     await manager_menu_handler.del_book_command(message, state)
 
+# create delete extra file canceler
+@dp.message_handler(lambda message: message.text == "الغاء حذف الملف" ,state=Del_File)
+async def cancel_del_book(message: types.Message, state: FSMContext):
+    if user_manager.get_manager_stage(message.from_user.id) == False:
+        await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await state.finish()
+        await message.answer("تم الالغاء بنجاح", reply_markup=get_user_markup(message.from_user.id))
+
+# create delete extra file 
+@dp.message_handler(lambda message: message.text == "حذف ملف ❌")
+async def del_book_handler(message: types.Message):
+    await manager_menu_handler.Del_extra_file(message)
+
+# create delete extra file by name handler
+@dp.message_handler(state=Del_Extra_File.temp)
+async def del_book_command_handler(message: types.Message, state: FSMContext):
+    await manager_menu_handler.del_extra_file_command(message, state)
+
 # create upload book handler
 stage_translate = {
         "1": "stage1",
@@ -110,6 +135,18 @@ async def upload_book(message: types.Message):
     await message.answer("جاري رفع الكتاب", reply_markup=get_user_markup(message.from_user.id))
     await bot.send_document(message.chat.id, document=open(get_file_by_name(stage_translate[user_manager.check_user_stage(message.from_user.id)], message.text), 'rb'))
 
+# create upload extra handler
+stage_translate = {
+        "1": "stage1",
+        "2": "stage2",
+        '3': "stage3",
+        '4': "stage4"
+    }
+@dp.message_handler(lambda message: message.text in get_extra_files_list(stage_translate[user_manager.check_user_stage(message.from_user.id)]))
+async def upload_book(message: types.Message):
+    await message.answer("جاري رفع الملف", reply_markup=get_user_markup(message.from_user.id))
+    await bot.send_document(message.chat.id, document=open(get_extra_file_by_name(stage_translate[user_manager.check_user_stage(message.from_user.id)], message.text), 'rb'))
+
 # create tools option at main meun 
 @dp.message_handler(lambda message: message.text == "أدوات 🧰")
 async def tools(message: types.Message):
@@ -117,6 +154,18 @@ async def tools(message: types.Message):
 
 # create add book cancler
 @dp.message_handler(lambda message: message.text == 'الغاء الاضافة', state=AddNewFile)
+async def cancel_handler(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state is None:
+        return
+
+    logging.info('Cancelling state %r', current_state)
+    # Cancel state and inform user about it
+    await state.finish()
+    await message.reply('تم الغاء الاضافة', reply_markup=get_user_markup(message.from_user.id))
+
+# create add extra file cancler
+@dp.message_handler(lambda message: message.text == 'الغاء الاضافة', state=AddNewExtraFile)
 async def cancel_handler(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
     if current_state is None:
@@ -142,70 +191,38 @@ async def Add_file_get_name(message: types.Message, state: FSMContext):
 async def Add_file_download(message: types.Message, state: FSMContext):
     await manager_menu_handler.Add_book_command(message, state, bot)
 
+# create add file command
+# create add file cancler
+@dp.message_handler(lambda message: message.text == 'الغاء الاضافة', state=AddNewFile)
+async def cancel_handler(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state is None:
+        return
+
+    logging.info('Cancelling state %r', current_state)
+    # Cancel state and inform user about it
+    await state.finish()
+    await message.reply('تم الغاء الاضافة', reply_markup=get_user_markup(message.from_user.id))
+
+# create add file 
+@dp.message_handler(lambda message: message.text == "اضافة ملف 📎")
+async def pdf_message(message: types.Message):
+    await manager_menu_handler.Add_extra_file(message, bot)
+
+# get file name
+@dp.message_handler(state=AddNewExtraFile.file_name)
+async def Add_file_get_name(message: types.Message, state: FSMContext):
+    await manager_menu_handler.Add_extra_file_get_file_name(message, state, bot)
+
+# download file
+@dp.message_handler(state=AddNewExtraFile.file_path, content_types=ContentTypes.DOCUMENT)
+async def Add_file_download(message: types.Message, state: FSMContext):
+    await manager_menu_handler.Add_extra_file_command(message, state, bot)
+
 #create my info message
 @dp.message_handler(lambda message: message.text == "معلوماتي ❓")
 async def my_info_message(message: types.Message):
     await message.reply(myInfo(message))
-
-# create collage logo message handler
-@dp.message_handler(lambda message: message.text == "شعار الكلية")
-async def duc_logo(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await message.reply("جاري رفع الصورة... يرجى الانتظار")
-        await bot.send_photo(message.chat.id, types.InputFile.from_url('https://duc.edu.iq/wp-content/uploads/2020/04/unnamed-file-1.png'))
-
-# create cs department logo message handler
-@dp.message_handler(lambda message: message.text == "شعار القسم")
-async def dep_logo(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await message.reply("جاري رفع الصورة... يرجى الانتظار")
-        await bot.send_photo(message.chat.id, types.InputFile.from_url('https://api.portal.duc.edu.iq/uploads/view/1645104654002.png'))
-
-# create s exams menu 
-@dp.message_handler(lambda message: message.text == "جدول الامتحانات")
-async def s_menu(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await bot.send_message(message.chat.id, "يمكنك الاختيار لعرض الجدول", reply_markup=s_markup)
-
-# create first stage s exams message handler 
-@dp.message_handler(lambda message: message.text == "جدول المرحلة الاولى")
-async def s_stage1(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await message.reply(answer("جدول المرحلة الاولى"))
-
-# create second stage s exams message handler 
-@dp.message_handler(lambda message: message.text == "جدول المرحلة الثانية")
-async def s_stage2(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await message.reply(answer("جدول المرحلة الثانية"))
-
-
-# create third stage s exams message handler 
-@dp.message_handler(lambda message: message.text == "جدول المرحلة الثالثة")
-async def s_stage3(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await message.reply(answer("جدول المرحلة الثالثة"))
-
-
-# create fourth stage s exams message handler 
-@dp.message_handler(lambda message: message.text == "جدول المرحلة الرابعة")
-async def s_stage4(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await message.reply(answer("جدول المرحلة الرابعة"))
 
 # create back to main menu message handler
 @dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية 🏠")
@@ -214,34 +231,6 @@ async def back_to_main_menu(message: types.Message):
         await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
     else:
         await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
-
-# create logic pdf message handler
-@dp.message_handler(lambda message: message.text == "منطق رقمي")
-async def pdf_message(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await message.reply("جاري الرفع... ")
-        await bot.send_document(message.chat.id, links("logic"))
-
-# create c++ pdf message handler
-@dp.message_handler(lambda message: message.text == "برمجة سي بلس بلس 2")
-async def pdf_message(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await message.reply("جاري الرفع... ")
-        await bot.send_document(message.chat.id, links("cplusplus"))
-
-# create pf pdf message handler
-@dp.message_handler(lambda message: message.text == "اساسيات البرمجة")
-async def pdf_message(message: types.Message):
-    if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
-    else:
-        await message.reply("جاري الرفع... ")
-        await bot.send_document(message.chat.id, links("pf"))
-
 
 # create hw messages menu 
 @dp.message_handler(lambda message: message.text == "عرض الواجبات 📃")

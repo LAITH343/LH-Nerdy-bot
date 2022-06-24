@@ -41,7 +41,14 @@ class AddNewFile(StatesGroup):
 	file_name = State()
 	file_path = State()
 
+class AddNewExtraFile(StatesGroup):
+	file_name = State()
+	file_path = State()
+
 class Del_File(StatesGroup):
+	temp = State()
+
+class Del_Extra_File(StatesGroup):
 	temp = State()
 
 class Selcet_Stage(StatesGroup):
