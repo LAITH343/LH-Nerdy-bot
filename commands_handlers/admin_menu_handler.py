@@ -4,13 +4,19 @@ from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_m
 from cmds.markup_manager import get_user_markup, custom_markup
 from cmds.classes import AnnoAll, AddManager, DelManager
 
+async def create_users_list():
+	message_list = ""
+	for key in get_all_usernames():
+		uid, username = key.split(";")
+		message_list +=f"أي دي المستخدم {uid} يوزر المستخدم @{username}\n"
+	return message_list
+
 async def View_all_users(message, bot):
 	if check_admin(message.from_user.id) != True:
 	    await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
 	else:
-		for key in get_all_usernames():
-			uid, username = key.split(";")
-			await message.reply(f"أيدي المستخدم {uid}   يوزر المستخدم @{username}", reply_markup=get_user_markup(message.from_user.id))
+		message_text = await create_users_list()
+		await message.answer(message_text, reply_markup=get_user_markup(message.from_user.id))
 
 async def Send_anno_4all(message, bot):
 	if check_admin(message.from_user.id) == False:
@@ -76,4 +82,3 @@ async def Add_manager_get_uid_and_add(message, state, bot):
 	    else:
 	        await bot.send_message(message.chat.id, "فشل اضافة المشرف", reply_markup=get_user_markup(message.from_user.id))
 	await state.finish()
-
