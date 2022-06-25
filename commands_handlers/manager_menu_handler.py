@@ -81,21 +81,15 @@ async def Add_book_get_file_name(message, state, bot):
 	await bot.send_message(message.chat.id, "ارسل الملف", reply_markup=custom_markup(["الغاء الاضافة"]))
 
 async def Add_book_command(message, state, bot):
-	stage_translate = {
-		1: "stage1",
-		2: "stage2",
-		3: "stage3",
-		4: "stage4"
-	}
 	if document := message.document:
 		await message.answer("جاري تنزيل الملف")
 		await document.download(
-			destination_file=f"storage/books/{stage_translate[get_manager_stage(message.from_user.id)]}/{document.file_name}",)
+			destination_file=f"storage/books/{get_manager_stage(message.from_user.id)}/{document.file_name}",)
 
 	async with state.proxy() as data:
-		data["file_path"] = f"storage/books/{stage_translate[get_manager_stage(message.from_user.id)]}/{document.file_name}"
+		data["file_path"] = f"storage/books/{get_manager_stage(message.from_user.id)}/{document.file_name}"
 
-		await add_file(stage_translate[get_manager_stage(message.from_user.id)], data["file_name"], data["file_path"])
+		await add_file(get_manager_stage(message.from_user.id), data["file_name"], data["file_path"])
 		await state.finish()
 		await bot.send_message(message.chat.id, "تم اضافة الملف بنجاح", reply_markup=get_user_markup(message.from_user.id))	
 
@@ -110,17 +104,10 @@ async def del_book_command(message, state):
 	if get_manager_stage(message.from_user.id) == False:
 		await message.answer("عذرا ليس لديك الصلاحيات لأجراء هذا الامر", reply_markup=get_user_markup(message.from_user.id))
 	else:
-		
-		stage_translate = {
-			1: "stage1",
-			2: "stage2",
-			3: "stage3",
-			4: "stage4"
-		}
 		if message.text == "الرجوع للقائمة الرئيسية 🏠":
 			await message.answer("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
 		else:
-			await del_file(stage_translate[get_manager_stage(message.from_user.id)],message.text)
+			await del_file(get_manager_stage(message.from_user.id),message.text)
 			await message.answer("تم حذف الكتاب", reply_markup=get_user_markup(message.from_user.id))
 
 		# await message.answer("فشل حذف الملف", reply_markup=get_user_markup(message.from_user.id))
@@ -142,21 +129,15 @@ async def Add_extra_file_get_file_name(message, state, bot):
 	await bot.send_message(message.chat.id, "ارسل الملف", reply_markup=custom_markup(["الغاء الاضافة"]))
 
 async def Add_extra_file_command(message, state, bot):
-	stage_translate = {
-		1: "stage1",
-		2: "stage2",
-		3: "stage3",
-		4: "stage4"
-	}
 	if document := message.document:
 		await message.answer("جاري تنزيل الملف")
 		await document.download(
-			destination_file=f"storage/extra/{stage_translate[get_manager_stage(message.from_user.id)]}/{document.file_name}",)
+			destination_file=f"storage/extra/{get_manager_stage(message.from_user.id)}/{document.file_name}",)
 
 	async with state.proxy() as data:
-		data["file_path"] = f"storage/extra/{stage_translate[get_manager_stage(message.from_user.id)]}/{document.file_name}"
+		data["file_path"] = f"storage/extra/{get_manager_stage(message.from_user.id)}/{document.file_name}"
 
-		await add_extra_file(stage_translate[get_manager_stage(message.from_user.id)], data["file_name"], data["file_path"])
+		await add_extra_file(get_manager_stage(message.from_user.id), data["file_name"], data["file_path"])
 		await state.finish()
 		await bot.send_message(message.chat.id, "تم اضافة الملف بنجاح", reply_markup=get_user_markup(message.from_user.id))	
 
@@ -171,17 +152,10 @@ async def del_extra_file_command(message, state):
 	if get_manager_stage(message.from_user.id) == False:
 		await message.answer("عذرا ليس لديك الصلاحيات لأجراء هذا الامر", reply_markup=get_user_markup(message.from_user.id))
 	else:
-		
-		stage_translate = {
-			1: "stage1",
-			2: "stage2",
-			3: "stage3",
-			4: "stage4"
-		}
 		if message.text == "الرجوع للقائمة الرئيسية 🏠":
 			await message.answer("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
 		else:
-			await del_extra_file(stage_translate[get_manager_stage(message.from_user.id)],message.text)
+			await del_extra_file(get_manager_stage(message.from_user.id),message.text)
 			await message.answer("تم حذف الملف", reply_markup=get_user_markup(message.from_user.id))
 		# await message.answer("فشل حذف الملف", reply_markup=get_user_markup(message.from_user.id))
 		await state.finish()
