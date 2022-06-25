@@ -1,12 +1,12 @@
 import sqlite3
 # table users_info
-# (id TEXT, name TEXT, username TEXT, stage TEXT, status TEXT, disable TEXT)
+# (id TEXT, name TEXT, username TEXT, stage TEXT, disable TEXT, manager TEXT, admin TEXT)
 
 
 def check_admin(uid):
 	db = sqlite3.connect("storage/users.db")
 	c = db.cursor()
-	c.execute("SELECT status FROM users_info WHERE status=? AND id=?", ("admin", str(uid),))
+	c.execute("SELECT admin FROM users_info WHERE admin=? AND id=?", ("True", str(uid),))
 	check = c.fetchone()
 	if check != None:
 		return True
@@ -40,7 +40,7 @@ def check_user_stage(uid):
 def get_manager_stage(uid):
 	db = sqlite3.connect("storage/users.db")
 	c = db.cursor()
-	c.execute("SELECT stage FROM users_info WHERE id=? AND status=?", (str(uid), "manager",))
+	c.execute("SELECT stage FROM users_info WHERE id=? AND manager=?", (str(uid), "True",))
 	stage = c.fetchone()
 	if stage != None:
 		return stage[0]
@@ -53,7 +53,7 @@ def get_manager_stage(uid):
 def add_user(stage, uid, name, username):
 	db = sqlite3.connect("storage/users.db")
 	c = db.cursor()
-	c.execute("INSERT INTO users_info VALUES (?, ?, ?, ?, ?, ?)", (str(uid), name, username, stage, "student", "False"))
+	c.execute("INSERT INTO users_info VALUES (?, ?, ?, ?, ?, ?, ?)", (str(uid), name, username, stage, "False", "False", "False"))
 	db.commit()
 	db.close()
 	return True
@@ -72,7 +72,7 @@ def add_manager(uid):
 	c.execute("SELECT id FROM users_info WHERE id=?", (str(uid),))
 	stage = c.fetchone()
 	if stage != None:
-		c.execute("Update users_info set status=? WHERE id=?", ("manager", uid))
+		c.execute("Update users_info set manager=? WHERE id=?", ("True", uid))
 		db.commit()
 		return True
 	else:
@@ -82,7 +82,7 @@ def add_manager(uid):
 def del_manager(uid):
 	db = sqlite3.connect("storage/users.db")
 	c = db.cursor()
-	c.execute("Update users_info set status=? WHERE id=?", ("student", uid))
+	c.execute("Update users_info set manager=? WHERE id=?", ("False", uid))
 	db.commit()
 	db.close()
 	return True
