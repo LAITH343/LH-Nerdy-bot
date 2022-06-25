@@ -1,6 +1,6 @@
 import asyncio
 from aiogram import types
-from cmds.user_manager import get_manager_stage, get_users_uid, check_user_stage
+from cmds.user_manager import get_manager_stage, get_users_uid, check_user_stage, get_users_uid_by_stage
 from cmds.markup_manager import get_user_markup, custom_markup, del_books_markup, del_extra_file_markup
 from cmds.classes import DelHW, AddHW, Anno, Del_File, AddNewFile, AddNewExtraFile, Del_Extra_File
 from cmds.hw_adder import add_hw
@@ -59,7 +59,7 @@ async def Manager_send_anno_command(message, state, bot):
 	    data['m'] = f"أعلان  📢 بواسطة: @{message.from_user.username}\n\n"
 	    data['m'] += message.text
 	    try:
-	        for user in get_users_uid(message.from_user.id):
+	        for user in get_users_uid_by_stage(get_manager_stage(message.from_user.id)):
 	            await bot.send_message(user, data['m'])
 	        await message.reply("تم ارسال الاعلان بنجاح", reply_markup=get_user_markup(message.from_user.id))
 	    except:
@@ -103,14 +103,8 @@ async def del_book(message):
 	if get_manager_stage(message.from_user.id) == False:
 		await message.answer("عذرا ليس لديك الصلاحيات لأجراء هذا الامر", reply_markup=get_user_markup(message.from_user.id))
 	else:
-		stage_translate = {
-			"1": "stage1",
-			"2": "stage2",
-			"3": "stage3",
-			"4": "stage4"
-		}
 		await Del_File.temp.set()
-		await message.answer("اختر الملف الذي تريد حذفه من القائمة", reply_markup=del_books_markup(get_files_list(stage_translate[check_user_stage(message.from_user.id)])))
+		await message.answer("اختر الملف الذي تريد حذفه من القائمة", reply_markup=del_books_markup(get_files_list(check_user_stage(message.from_user.id))))
 
 async def del_book_command(message, state):
 	if get_manager_stage(message.from_user.id) == False:
@@ -170,14 +164,8 @@ async def Del_extra_file(message):
 	if get_manager_stage(message.from_user.id) == False:
 		await message.answer("عذرا ليس لديك الصلاحيات لأجراء هذا الامر", reply_markup=get_user_markup(message.from_user.id))
 	else:
-		stage_translate = {
-			"1": "stage1",
-			"2": "stage2",
-			"3": "stage3",
-			"4": "stage4"
-		}
 		await Del_Extra_File.temp.set()
-		await message.answer("اختر الملف الذي تريد حذفه من القائمة", reply_markup=del_extra_file_markup(get_extra_files_list(stage_translate[check_user_stage(message.from_user.id)])))
+		await message.answer("اختر الملف الذي تريد حذفه من القائمة", reply_markup=del_extra_file_markup(get_extra_files_list(check_user_stage(message.from_user.id))))
 
 async def del_extra_file_command(message, state):
 	if get_manager_stage(message.from_user.id) == False:

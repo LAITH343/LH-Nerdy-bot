@@ -124,29 +124,17 @@ async def del_book_command_handler(message: types.Message, state: FSMContext):
     await manager_menu_handler.del_extra_file_command(message, state)
 
 # create upload book handler
-stage_translate = {
-        "1": "stage1",
-        "2": "stage2",
-        '3': "stage3",
-        '4': "stage4"
-    }
-@dp.message_handler(lambda message: message.text in get_files_list(stage_translate[user_manager.check_user_stage(message.from_user.id)]), state=GetBook.temp)
+@dp.message_handler(lambda message: message.text in get_files_list(user_manager.check_user_stage(message.from_user.id)), state=GetBook.temp)
 async def upload_book(message: types.Message, state: FSMContext):
     await message.answer("جاري رفع الكتاب", reply_markup=get_user_markup(message.from_user.id))
-    await bot.send_document(message.chat.id, document=open(get_file_by_name(stage_translate[user_manager.check_user_stage(message.from_user.id)], message.text), 'rb'))
+    await bot.send_document(message.chat.id, document=open(get_file_by_name(user_manager.check_user_stage(message.from_user.id), message.text), 'rb'))
     await state.finish()
 
 # create upload extra handler
-stage_translate = {
-        "1": "stage1",
-        "2": "stage2",
-        '3': "stage3",
-        '4': "stage4"
-    }
-@dp.message_handler(lambda message: message.text in get_extra_files_list(stage_translate[user_manager.check_user_stage(message.from_user.id)]), state=GetFile.temp)
+@dp.message_handler(lambda message: message.text in get_extra_files_list(user_manager.check_user_stage(message.from_user.id)), state=GetFile.temp)
 async def upload_book(message: types.Message, state: FSMContext):
     await message.answer("جاري رفع الملف", reply_markup=get_user_markup(message.from_user.id))
-    await bot.send_document(message.chat.id, document=open(get_extra_file_by_name(stage_translate[user_manager.check_user_stage(message.from_user.id)], message.text), 'rb'))
+    await bot.send_document(message.chat.id, document=open(get_extra_file_by_name(user_manager.check_user_stage(message.from_user.id), message.text), 'rb'))
     await state.finish()
 
 # create tools option at main meun 
@@ -230,7 +218,7 @@ async def my_info_message(message: types.Message):
 @dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية 🏠")
 async def back_to_main_menu(message: types.Message):
     if user_manager.check_user_exist(message.from_user.id) == False:
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
+        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
     else:
         await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
 
@@ -247,8 +235,7 @@ async def user_managment(message: types.Message):
         await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
     else:
         m = message.get_full_command()
-        values = m[1].split(" ")
-        if user_manager.del_user(values[0], int(values[1])) == True:
+        if user_manager.del_user(m[1]) == True:
             await message.reply("تم الحذف بنجاح")
         else:
             await message.reply("حدث خطأ عند الحذف")
@@ -435,44 +422,6 @@ async def merge(message: types.Message, state: FSMContext):
 async def images_downloader(message: types.Message, state: FSMContext):
     await tools_handler.Imgs2Pdf_Imgs_downloader(message, state)
 
-
-"""
-# create pdf compress handler
-@dp.message_handler(lambda message: message.text == "ضغط ملف pdf (تقليل حجم)")
-async def merge(message: types.Message, state: FSMContext):
-    if check_user_exist(message.from_user.id) == False:
-        await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
-    else:
-        await CompressPdf.folder.set()
-        randfile = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
-        os.system(f"mkdir cache/{randfile}")
-        async with state.proxy() as data:
-            data['folder'] = f"cache/{randfile}"
-        await message.reply("ارسل ملف الpdf", reply_markup=compress_markup)
-
-# create compress cancel message handler
-@dp.message_handler(lambda message: message.text == "الغاء الضغط", state=CompressPdf.folder)
-async def compress_cancel(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        os.system(f"rm -rf {data['folder']}")
-        await message.reply("تم الغاء الضغط وحذف الملفات", reply_markup=get_user_markup(message.from_user.id))
-    await state.finish()
-
-# download the file and re-send it after compresing
-@dp.message_handler(state=CompressPdf.folder, content_types=ContentTypes.DOCUMENT)
-async def download_and_upload(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        if document := message.document:
-            await bot.send_message(message.chat.id, "جاري تنزيل الملف يرجى الانتضار")
-            await document.download(
-                destination_file=f"{data['folder']}/{document.file_name}",
-            )
-            await bot.send_message(message.chat.id, "جاري ضغط الملف يرجى الانتضار")
-            await bot.send_document(message.chat.id, document=open(compress_pdf(f"{data['folder']}/{document.file_name}", data['folder']), 'rb'), reply_markup=get_user_markup(message.from_user.id))
-                # await message.reply("فشل دمج الملفات")
-            os.system(f"rm -rf {data['folder']}")
-        await state.finish()
-"""
 
 # create unkown message handler
 @dp.message_handler()

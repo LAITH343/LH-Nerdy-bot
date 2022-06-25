@@ -1,170 +1,121 @@
-import yaml
+import sqlite3
+# table users_info
+# (id TEXT, name TEXT, username TEXT, stage TEXT, status TEXT, disable TEXT)
 
 
 def check_admin(uid):
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		user = cfg['users']['admin']
-	if uid in user:
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute("SELECT status FROM users_info WHERE status=? AND id=?", ("admin", str(uid),))
+	check = c.fetchone()
+	if check != None:
 		return True
 	else:
 		return False
-	cfg.close()
+	db.close()
 
 def check_user_exist(uid):
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		stage1 = cfg['users']['stage1']
-		stage2 = cfg['users']['stage2']
-		stage3 = cfg['users']['stage3']
-		stage4 = cfg['users']['stage4']
-	if uid in stage1 or stage2 or stage3 or stage4:
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute("SELECT id FROM users_info WHERE id=?", (str(uid),))
+	check = c.fetchone()
+	if check != None:
 		return True
 	else:
 		return False
-	cfg.close()
-
+	db.close()
 
 def check_user_stage(uid):
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		stage1 = cfg['users']['stage1']
-		stage2 = cfg['users']['stage2']
-		stage3 = cfg['users']['stage3']
-		stage4 = cfg['users']['stage4']
-	if uid in stage1:
-		return "1"
-	elif uid in stage2:
-		return "2"
-	elif uid in stage3:
-		return "3"
-	elif uid in stage4:
-		return "4"
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute("SELECT stage FROM users_info WHERE id=?", (str(uid),))
+	stage = c.fetchone()
+	if stage != None:
+		return stage[0]
 	else:
 		return False
-	cfg.close()
+	db.close()
 
-def check_user_stage_name(uid):
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		stage1 = cfg['users']['stage1']
-		stage2 = cfg['users']['stage2']
-		stage3 = cfg['users']['stage3']
-		stage4 = cfg['users']['stage4']
-	if uid in stage1:
-		return "اولى"
-	elif uid in stage2:
-		return "ثانية"
-	elif uid in stage3:
-		return "ثالثة"
-	elif uid in stage4:
-		return "رابعة"
-	else:
-		return "انت لا تنتمي ﻷي مرحلة"
-	cfg.close()
 
 def get_manager_stage(uid):
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		stage1 = cfg['managers']['stage1']
-		stage2 = cfg['managers']['stage2']
-		stage3 = cfg['managers']['stage3']
-		stage4 = cfg['managers']['stage4']
-	if uid in stage1:
-		return 1
-	elif uid in stage2:
-		return 2
-	elif uid in stage3:
-		return 3
-	elif uid in stage4:
-		return 4
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute("SELECT stage FROM users_info WHERE id=? AND status=?", (str(uid), "manager",))
+	stage = c.fetchone()
+	if stage != None:
+		return stage[0]
 	else:
 		return False
+	db.close()
 
 
 
-def add_user(stage, uid):
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		cfg['users'][stage].append(uid)
-	if cfg:
-		with open('storage/users_info.yml', 'w') as ucfg:
-			yaml.safe_dump(cfg, ucfg)
+def add_user(stage, uid, name, username):
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute("INSERT INTO users_info VALUES (?, ?, ?, ?, ?, ?)", (str(uid), name, username, stage, "student", "False"))
+	db.commit()
+	db.close()
 	return True
 
-def del_user(stage, uid):
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		cfg['users'][stage].remove(uid)
-	if cfg:
-		with open('storage/users_info.yml', 'w') as ucfg:
-			yaml.safe_dump(cfg, ucfg)
+def del_user(uid):
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute(f"DELETE FROM users_info WHERE id=?", (uid,))
+	db.commit()
+	db.close()
 	return True
 
-def add_manager(stage, uid):
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		cfg['managers'][stage].append(uid)
-	if cfg:
-		with open('storage/users_info.yml', 'w') as ucfg:
-			yaml.safe_dump(cfg, ucfg)
+def add_manager(uid):
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute("SELECT id FROM users_info WHERE id=?", (str(uid),))
+	stage = c.fetchone()
+	if stage != None:
+		c.execute("Update users_info set status=? WHERE id=?", ("manager", uid))
+		db.commit()
+		return True
+	else:
+		return False
+	db.close()
+
+def del_manager(uid):
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute("Update users_info set status=? WHERE id=?", ("student", uid))
+	db.commit()
+	db.close()
 	return True
 
-def del_manager(stage, uid):
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		cfg['managers'][stage].remove(uid)
-	if cfg:
-		with open('storage/users_info.yml', 'w') as ucfg:
-			yaml.safe_dump(cfg, ucfg)
-	return True
-
-def get_users_uid(uid):
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		stage1 = cfg['users']['stage1']
-		stage2 = cfg['users']['stage2']
-		stage3 = cfg['users']['stage3']
-		stage4 = cfg['users']['stage4']
+def get_users_uid():
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute("SELECT id FROM users_info")
+	ids = c.fetchall()
 	ul = []
-	if get_manager_stage(uid) == 1:
-		stage = stage1
-	elif get_manager_stage(uid) == 2:
-		stage = stage2
-	elif get_manager_stage(uid) == 3:
-		stage = stage3
-	elif get_manager_stage(uid) == 4:
-		stage = stage4
-	
-	for i in stage:
-		ul.append(i)
-	ul.remove(uid)
+	for id in ids:
+		ul.append(id[0])
+	db.close()
 	return ul
 
-def add_username(stage, uid, username):
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		cfg['usernames'][stage].append(str(uid)+";"+username)
-	if cfg:
-		with open('storage/users_info.yml', 'w') as fd:
-			yaml.safe_dump(cfg, fd)
-	return True
-
 def get_all_usernames():
-	with open('storage/users_info.yml', 'r') as ucfg:
-		cfg = yaml.safe_load(ucfg)
-		stage1 = cfg['usernames']['stage1']
-		stage2 = cfg['usernames']['stage2']
-		stage3 = cfg['usernames']['stage3']
-		stage4 = cfg['usernames']['stage4']
-
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute("SELECT username FROM users_info")
+	users_name = c.fetchall()
 	userlist = []
-	for user in stage1:
-		userlist.append(user)
-	for user in stage2:
-		userlist.append(user)
-	for user in stage3:
-		userlist.append(user)
-	for user in stage4:
-		userlist.append(user)
+	for user in users_name:
+		userlist.append(user[0])
+	db.close()
 	return userlist
+
+def get_users_uid_by_stage(stage):
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute("SELECT id FROM users_info WHERE stage=?", (stage,))
+	ids = c.fetchall()
+	ulbystage = []
+	for id in ids:
+		ulbystage.append(id[0])
+	db.close()
+	return ulbystage

@@ -1,7 +1,7 @@
 import asyncio
 from aiogram import types
 from cmds.classes import Selcet_Stage
-from cmds.user_manager import check_user_exist, add_user, add_username
+from cmds.user_manager import check_user_exist, add_user
 from cmds.markup_manager import get_user_markup, custom_markup
 
 async def Select_stage(message):
@@ -18,8 +18,7 @@ async def Add_user(message, state):
 			"مرحلة رابعة": "stage4",
 		}
 		if message.from_user.username != None:
-			add_username(stage_translate[message.text], message.from_user.id, message.from_user.username)
-			add_user(stage_translate[message.text], message.from_user.id)
+			add_user(stage_translate[message.text], message.from_user.id, message.from_user.full_name, message.from_user.username)
 			await message.answer("تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
 		else:
 			await message.answer("يرجى وضع اسم مستخدم (المعرف) أولا", reply_markup=get_user_markup(message.from_user.id))

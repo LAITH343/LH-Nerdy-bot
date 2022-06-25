@@ -1,15 +1,22 @@
-from cmds.user_manager import check_admin, check_user_stage_name, check_user_exist, get_manager_stage
+from cmds.user_manager import check_admin, check_user_stage, get_manager_stage
+
+stage_translate = {
+	"stage1": "مرحلة اولى",
+	"stage2": "مرحلة ثانية",
+	"stage3": "مرحلة ثالثة",
+	"stage4": "مرحلة رابعة",
+}
 
 def myInfo(message):
 	if check_admin(message.from_user.id) == True:
 		state = "مسؤول"
-	elif get_manager_stage(message.from_user.id) == 1:
+	elif get_manager_stage(message.from_user.id) == "stage1":
 		state = "مشرف مرحلة اولى"
-	elif get_manager_stage(message.from_user.id) == 2:
+	elif get_manager_stage(message.from_user.id) == "stage2":
 		state = "مشرف مرحلة ثانية"
-	elif get_manager_stage(message.from_user.id) == 3:
+	elif get_manager_stage(message.from_user.id) == "stage3":
 		state = "مشرف مرحلة ثالثة"
-	elif get_manager_stage(message.from_user.id) == 4:
+	elif get_manager_stage(message.from_user.id) == "Stage4":
 		state = "مشرف مرحلة رابعة"
 	else:
 		state = f"طالب"
@@ -17,5 +24,5 @@ def myInfo(message):
 الاسم: {message.from_user.full_name}
 الأي دي: {message.from_user.id}
 الحالة: {state}
-المرحلة: {check_user_stage_name(message.from_user.id)}
+المرحلة: {stage_translate[check_user_stage(message.from_user.id)]}
 	"""

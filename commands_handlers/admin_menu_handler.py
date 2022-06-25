@@ -1,14 +1,15 @@
 import asyncio
 from aiogram import types
-from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager
+from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_users_uid
 from cmds.markup_manager import get_user_markup, custom_markup
 from cmds.classes import AnnoAll, AddManager, DelManager
 
 async def create_users_list():
 	message_list = ""
-	for key in get_all_usernames():
-		uid, username = key.split(";")
-		message_list +=f"أي دي المستخدم {uid} يوزر المستخدم @{username}\n"
+	uid = get_users_uid()
+	username = get_all_usernames()
+	for i in range(len(get_all_usernames())):
+			message_list +=f"أي دي المستخدم {uid[i]} يوزر المستخدم @{username[i]}\n"
 	return message_list
 
 async def View_all_users(message, bot):
@@ -30,7 +31,7 @@ async def Get_anno_msg_and_send(message, state, bot):
 	    data['m'] = f"أعلان للجميع 📢 بواسطة: @{message.from_user.username}\n\n"
 	    data['m'] += message.text
 	    try:
-	        for user in get_users_uid_all(message.from_user.id):
+	        for user in get_users_uid():
 	            await bot.send_message(user, data['m'])
 	        await message.reply("تم ارسال الاعلان بنجاح", reply_markup=get_user_markup(message.from_user.id))
 	    except:
@@ -54,7 +55,7 @@ async def Delete_manager_get_stage(message, state):
 async def Delete_manager_get_uid_and_del(message, state, bot):
 	async with state.proxy() as data:
 	    data['uid'] = int(message.text)
-	    if del_manager(data['stage'], data['uid']) == True:
+	    if del_manager(data['uid']) == True:
 	        await message.reply("تم الحذف بنجاح", reply_markup=get_user_markup(message.from_user.id))
 	    else:
 	        await bot.send_message(message.chat.id, "فشل حذف المشرف", reply_markup=get_user_markup(message.from_user.id))
@@ -77,7 +78,7 @@ async def Add_manager_get_stage(message, state):
 async def Add_manager_get_uid_and_add(message, state, bot):
 	async with state.proxy() as data:
 	    data['uid'] = int(message.text)
-	    if add_manager(data['stage'], data['uid']) == True:
+	    if add_manager(data['uid']) == True:
 	        await message.reply("تم الاضافة بنجاح", reply_markup=get_user_markup(message.from_user.id))
 	    else:
 	        await bot.send_message(message.chat.id, "فشل اضافة المشرف", reply_markup=get_user_markup(message.from_user.id))

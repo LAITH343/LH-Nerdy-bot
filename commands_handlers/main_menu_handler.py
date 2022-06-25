@@ -1,7 +1,7 @@
 import asyncio
 from aiogram import types
 from cmds.markup_manager import manager_markup, admin_markup, get_user_markup, custom_markup, books_markup, extra_file_markup
-from cmds.user_manager import check_admin, get_manager_stage, check_user_exist, get_manager_stage, check_user_stage
+from cmds.user_manager import check_admin, check_user_exist, get_manager_stage, check_user_stage
 from cmds.classes import AddNewFile, GetBook, GetFile
 from cmds.books_manager import add_file, get_files_list, get_extra_files_list
 
@@ -46,26 +46,14 @@ async def Books_View(message):
 	if check_user_exist(message.from_user.id) == False:
 		message.answer("يجب اختيار مرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
 	else:
-		stage_translate = {
-		"1": "stage1",
-		"2": "stage2",
-		'3': "stage3",
-		'4': "stage4"
-	}
-		if get_files_list(stage_translate[check_user_stage(message.from_user.id)]) != []:
+		if get_files_list(check_user_stage(message.from_user.id)) != []:
 			await GetBook.temp.set()
-		await message.answer("اختر كاتب من القائمة", reply_markup=books_markup(get_files_list(stage_translate[check_user_stage(message.from_user.id)])))
+		await message.answer("اختر كاتب من القائمة", reply_markup=books_markup(get_files_list(check_user_stage(message.from_user.id))))
 
 async def Extra_file_View(message):
 	if check_user_exist(message.from_user.id) == False:
 		message.answer("يجب اختيار مرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
 	else:
-		stage_translate = {
-		"1": "stage1",
-		"2": "stage2",
-		'3': "stage3",
-		'4': "stage4"
-	}
-		if get_extra_files_list(stage_translate[check_user_stage(message.from_user.id)]) != []:
+		if get_extra_files_list(check_user_stage(message.from_user.id)) != []:
 			await GetFile.temp.set()
-		await message.answer("اختر كاتب من القائمة", reply_markup=extra_file_markup(get_extra_files_list(stage_translate[check_user_stage(message.from_user.id)])))
+		await message.answer("اختر كاتب من القائمة", reply_markup=extra_file_markup(get_extra_files_list(check_user_stage(message.from_user.id))))
