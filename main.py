@@ -50,7 +50,7 @@ s_markup = custom_markup(["جدول المرحلة الاولى", "جدول ال
 @dp.message_handler(commands=['addadmin'])
 async def add_admin(message: types.Message, state: FSMContext):
     if message.from_user.id == 708690017:
-        user_manager.add_admin(message.text)
+        user_manager.add_admin(message.get_full_command()[1])
         await message.answer("تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
     else:
         await message.answer("ليس لديك الصلاحيات ﻷجراء هذا الامر")
