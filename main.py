@@ -9,7 +9,7 @@ from sources.s import answer
 from cmds.myinfo import myInfo
 from cmds.hw_adder import add_hw
 from cmds.hw_getter import get_hw, get_hw_allweek
-from cmds import user_manager
+from cmds import user_manager, error_reporter
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -53,7 +53,7 @@ s_markup = custom_markup(["جدول المرحلة الاولى", "جدول ال
 # add new user
 @dp.message_handler(state=Selcet_Stage.stage)
 async def Add_new_user(message: types.Message, state: FSMContext):
-    await new_user_handler.Add_user(message, state)
+    await new_user_handler.Add_user(message, state, bot)
     
 # create select stage menu 
 @dp.message_handler(lambda message: message.text == "اختيار المرحلة")
@@ -61,7 +61,7 @@ async def stage_select_menu(message: types.Message):
     if user_manager.check_user_exist(message.from_user.id) == True:
         await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
     else:
-        await new_user_handler.Select_stage(message)
+        await new_user_handler.Select_stage(message, bot)
 
 
 # create start message/command handler
@@ -97,12 +97,12 @@ async def cancel_del_book(message: types.Message, state: FSMContext):
 # create delete book 
 @dp.message_handler(lambda message: message.text == "حذف كتاب ❌")
 async def del_book_handler(message: types.Message):
-    await manager_menu_handler.del_book(message)
+    await manager_menu_handler.del_book(message, bot)
 
 # create delete book by name handler
 @dp.message_handler(state=Del_File.temp)
 async def del_book_command_handler(message: types.Message, state: FSMContext):
-    await manager_menu_handler.del_book_command(message, state)
+    await manager_menu_handler.del_book_command(message, state, bot)
 
 # create delete extra file canceler
 @dp.message_handler(lambda message: message.text == "الغاء حذف الملف" ,state=Del_Extra_File)
@@ -116,26 +116,36 @@ async def cancel_del_book(message: types.Message, state: FSMContext):
 # create delete extra file 
 @dp.message_handler(lambda message: message.text == "حذف ملف ❌")
 async def del_book_handler(message: types.Message):
-    await manager_menu_handler.Del_extra_file(message)
+    await manager_menu_handler.Del_extra_file(message, bot)
 
 # create delete extra file by name handler
 @dp.message_handler(state=Del_Extra_File.temp)
 async def del_book_command_handler(message: types.Message, state: FSMContext):
-    await manager_menu_handler.del_extra_file_command(message, state)
+    await manager_menu_handler.del_extra_file_command(message, state, bot)
 
 # create upload book handler
 @dp.message_handler(lambda message: message.text in get_files_list(user_manager.check_user_stage(message.from_user.id)), state=GetBook.temp)
 async def upload_book(message: types.Message, state: FSMContext):
-    await message.answer("جاري رفع الكتاب", reply_markup=get_user_markup(message.from_user.id))
-    await bot.send_document(message.chat.id, document=open(get_file_by_name(user_manager.check_user_stage(message.from_user.id), message.text), 'rb'))
-    await state.finish()
+    try:
+        await message.answer("جاري رفع الكتاب", reply_markup=get_user_markup(message.from_user.id))
+        await bot.send_document(message.chat.id, document=open(get_file_by_name(user_manager.check_user_stage(message.from_user.id), message.text), 'rb'))
+        await state.finish()
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "main - upload book handler", e)
 
 # create upload extra handler
 @dp.message_handler(lambda message: message.text in get_extra_files_list(user_manager.check_user_stage(message.from_user.id)), state=GetFile.temp)
 async def upload_book(message: types.Message, state: FSMContext):
-    await message.answer("جاري رفع الملف", reply_markup=get_user_markup(message.from_user.id))
-    await bot.send_document(message.chat.id, document=open(get_extra_file_by_name(user_manager.check_user_stage(message.from_user.id), message.text), 'rb'))
-    await state.finish()
+    try:
+        await message.answer("جاري رفع الملف", reply_markup=get_user_markup(message.from_user.id))
+        await bot.send_document(message.chat.id, document=open(get_extra_file_by_name(user_manager.check_user_stage(message.from_user.id), message.text), 'rb'))
+        await state.finish()
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "main - upload extra handler", e)
 
 # create tools option at main meun 
 @dp.message_handler(lambda message: message.text == "أدوات 🧰")
@@ -222,6 +232,25 @@ async def back_to_main_menu(message: types.Message):
     else:
         await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
 
+# create back to main menu message handler for view book
+@dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية", state=GetBook.temp)
+async def back_to_main_menu(message: types.Message, state: FSMContext):
+    if user_manager.check_user_exist(message.from_user.id) == False:
+        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
+        await state.finish()
+
+# create back to main menu message handler for view files
+@dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية", state=GetFile.temp)
+async def back_to_main_menu(message: types.Message, state: FSMContext):
+    if user_manager.check_user_exist(message.from_user.id) == False:
+        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
+        await state.finish()
+
+
 # create hw messages menu 
 @dp.message_handler(lambda message: message.text == "عرض الواجبات 📃")
 async def view_hw(message: types.Message):
@@ -281,7 +310,7 @@ async def HW_managment(message: types.Message):
 # get the day from the user
 @dp.message_handler(state=AddHW.day)
 async def process_day(message: types.Message, state: FSMContext):
-    await manager_menu_handler.Manager_get_day(message, state)
+    await manager_menu_handler.Manager_get_day(message, state, bot)
 
 # get add hw message handler
 @dp.message_handler(state=AddHW.hw)
@@ -317,7 +346,7 @@ async def user_managment(message: types.Message):
 # get the stage from the user
 @dp.message_handler(state=AddManager.stage)
 async def process_name(message: types.Message, state: FSMContext):
-    await admin_menu_handler.Add_manager_get_stage(message, state)
+    await admin_menu_handler.Add_manager_get_stage(message, state, bot)
 
 # get user id form the user and end data entry
 @dp.message_handler(lambda message: message.text.isdigit(), state=AddManager.uid)
@@ -371,12 +400,12 @@ async def view_man_permissions(message: types.Message):
 # create merge pdf canceler handler
 @dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergePdf)
 async def merge(message: types.Message, state: FSMContext):
-    await tools_handler.MergePdf_cancel_handler(message, state)
+    await tools_handler.MergePdf_cancel_handler(message, state, bot)
 
 # ask the user about the file name
 @dp.message_handler(lambda message: message.text == "دمج ملفات pdf")
 async def merge_file_name(message: types.Message, state: FSMContext):
-    await tools_handler.MergePdf_ask_file_name(message, state)
+    await tools_handler.MergePdf_ask_file_name(message, state, bot)
 
 # get the file name
 @dp.message_handler(state=MergePdf.file_name)
@@ -387,7 +416,7 @@ async def get_file_name(message: types.Message, state: FSMContext):
 # create pdfs getter
 @dp.message_handler(state=MergePdf.temp, content_types=ContentTypes.DOCUMENT)
 async def pdf_getter(message: types.Message, state: FSMContext):
-    await tools_handler.MergePdf_get_files(message, state)
+    await tools_handler.MergePdf_get_files(message, state, bot)
 
 # create merge pdf command handler
 @dp.message_handler(lambda message: message.text == "دمج" ,state=MergePdf.temp)
@@ -398,19 +427,19 @@ async def merge_handler(message: types.Message, state: FSMContext):
 # create cancel images merge to pdf message handler
 @dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergeImages)
 async def merge(message: types.Message, state: FSMContext):
-    await tools_handler.Imgs2Pdf_cancel_handler(message, state)
+    await tools_handler.Imgs2Pdf_cancel_handler(message, state, bot)
 
 
 # ask the user about the name of the file
 @dp.message_handler(lambda message: message.text == "تحويل الصور الى pdf")
 async def merge(message: types.Message, state: FSMContext):
-    await tools_handler.Imgs2Pdf_file_name(message, state)
+    await tools_handler.Imgs2Pdf_file_name(message, state, bot)
 
 
 # get the images from the user
 @dp.message_handler(state=MergeImages.file_name)
 async def merge(message: types.Message, state: FSMContext):
-    await tools_handler.Imgs2Pdf_get_images(message, state)
+    await tools_handler.Imgs2Pdf_get_images(message, state, bot)
 
 # create merge images command handler
 @dp.message_handler(lambda message: message.text == "دمج" ,state=MergeImages.temp)
@@ -420,7 +449,7 @@ async def merge(message: types.Message, state: FSMContext):
 # create images downloader
 @dp.message_handler(state=MergeImages.temp, content_types=ContentTypes.ANY)
 async def images_downloader(message: types.Message, state: FSMContext):
-    await tools_handler.Imgs2Pdf_Imgs_downloader(message, state)
+    await tools_handler.Imgs2Pdf_Imgs_downloader(message, state, bot)
 
 
 # create unkown message handler

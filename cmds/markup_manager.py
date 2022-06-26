@@ -45,7 +45,7 @@ def books_markup(options: list):
 	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	for option in options:
 		custom.add(option)
-	custom.add("الرجوع للقائمة الرئيسية 🏠")
+	custom.add("الرجوع للقائمة الرئيسية")
 	return custom
 
 def del_books_markup(options: list):
@@ -62,7 +62,7 @@ def extra_file_markup(options: list):
 	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	for option in options:
 		custom.add(option)
-	custom.add("الرجوع للقائمة الرئيسية 🏠")
+	custom.add("الرجوع للقائمة الرئيسية")
 	return custom
 
 def del_extra_file_markup(options: list):
