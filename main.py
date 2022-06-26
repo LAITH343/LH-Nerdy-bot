@@ -241,6 +241,14 @@ async def back_to_main_menu(message: types.Message):
         await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
 
 # create back to main menu message handler for view book
+@dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية")
+async def back_to_main_menu(message: types.Message):
+    if user_manager.check_user_exist(message.from_user.id) == False:
+        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
+
+# create back to main menu message handler for view book
 @dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية", state=GetBook.temp)
 async def back_to_main_menu(message: types.Message, state: FSMContext):
     if user_manager.check_user_exist(message.from_user.id) == False:
