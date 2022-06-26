@@ -1,10 +1,8 @@
 stage1:
   book_name: []
   book_path: []
-  extra_file_name:
-  - testing
-  extra_file_path:
-  - storage/extra/stage1/DS-Mid-Q4.pdf
+  extra_file_name: []
+  extra_file_path: []
 stage2:
   book_name: []
   book_path: []
