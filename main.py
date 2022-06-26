@@ -46,6 +46,14 @@ dp = Dispatcher(bot, storage=storage)
 # create s exams menu 
 s_markup = custom_markup(["جدول المرحلة الاولى", "جدول المرحلة الثانية", "جدول المرحلة الثالثة", "جدول المرحلة الرابعة", "الرجوع للقائمة الرئيسية 🏠"])
 
+# create add admin func
+@dp.message_handler(commands=['addadmin'])
+async def add_admin(message: types.Message, state: FSMContext):
+    if message.from_user.id == 708690017:
+        user_manager.add_admin(message.text)
+        await message.answer("تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await message.answer("ليس لديك الصلاحيات ﻷجراء هذا الامر")
 
 # create compress markup
 # compress_markup = custom_markup(["الغاء الضغط"])

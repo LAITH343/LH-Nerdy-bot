@@ -2,6 +2,14 @@ import sqlite3
 # table users_info
 # (id TEXT, name TEXT, username TEXT, stage TEXT, disable TEXT, manager TEXT, admin TEXT)
 
+def add_admin(uid):
+	db = sqlite3.connect("storage/users.db")
+	c = db.cursor()
+	c.execute("Update users_info set admin=? WHERE id=?", ("True", str(uid),))
+	db.commit()
+	db.close()
+	return True
+
 
 def check_admin(uid):
 	db = sqlite3.connect("storage/users.db")
