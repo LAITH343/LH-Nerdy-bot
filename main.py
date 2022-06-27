@@ -1,22 +1,14 @@
 import logging
 import os
-import string
-import random
-import asyncio
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ContentTypes
-from sources.s import answer
 from cmds.myinfo import myInfo
-from cmds.hw_adder import add_hw
-from cmds.hw_getter import get_hw, get_hw_allweek
 from cmds import user_manager, error_reporter
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
 from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, Del_File, Selcet_Stage, AddNewExtraFile, Del_Extra_File, GetBook, GetFile
-from cmds.markup_manager import get_user_markup, manager_markup, admin_markup, custom_markup
-from cmds.pdf_manager import merge_pdfs, images_to_pdf
+from cmds.markup_manager import get_user_markup, custom_markup
 from commands_handlers.unkown_message_handler import unknow_messages
 from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler, new_user_handler
 from cmds.books_manager import get_files_list, get_file_by_name, get_extra_file_by_name, get_extra_files_list
@@ -43,10 +35,11 @@ bot = Bot(token=bot_token)
 dp = Dispatcher(bot, storage=storage)
 
 
-# create s exams menu 
+# create s exams menu
 s_markup = custom_markup(["جدول المرحلة الاولى", "جدول المرحلة الثانية", "جدول المرحلة الثالثة", "جدول المرحلة الرابعة", "الرجوع للقائمة الرئيسية 🏠"])
 
-# create add admin func
+
+# create add admin handler
 @dp.message_handler(commands=['addadmin'])
 async def add_admin(message: types.Message, state: FSMContext):
     if message.from_user.id == 708690017:
@@ -55,8 +48,16 @@ async def add_admin(message: types.Message, state: FSMContext):
     else:
         await message.answer("ليس لديك الصلاحيات ﻷجراء هذا الامر")
 
-# create compress markup
-# compress_markup = custom_markup(["الغاء الضغط"])
+
+# create remove admin handler
+@dp.message_handler(commands=["deladmin"])
+async def add_admin(message: types.Message, state: FSMContext):
+    if message.from_user.id == 708690017:
+        user_manager.del_admin(message.get_full_command()[1])
+        await message.answer("تم الحذف", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await message.answer("ليس لديك الصلاحيات ﻷجراء هذا الامر")
+
 
 # add new user
 @dp.message_handler(state=Selcet_Stage.stage)
@@ -67,12 +68,13 @@ async def Add_new_user(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - add new user", e)
-    
+
+
 # create select stage menu 
 @dp.message_handler(lambda message: message.text == "اختيار المرحلة")
 async def stage_select_menu(message: types.Message):
     try:
-        if user_manager.check_user_exist(message.from_user.id) == True:
+        if user_manager.check_user_exist(message.from_user.id):
             await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
         else:
             await new_user_handler.Select_stage(message, bot)
@@ -90,6 +92,7 @@ async def start_message(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - start message/command handler", e)
 
+
 # create exit message handler
 @dp.message_handler(lambda message: message.text == "أغلاق ❌")
 async def cancel_message(message: types.Message):
@@ -98,6 +101,7 @@ async def cancel_message(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - exit message handler", e)
+
 
 # create view book handler
 @dp.message_handler(lambda message: message.text == "الكتب 📚")
@@ -108,6 +112,7 @@ async def view_books(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - view book handler", e)
 
+
 # create view extra files handler
 @dp.message_handler(lambda message: message.text == "الملفات 📎")
 async def view_books(message: types.Message):
@@ -117,11 +122,12 @@ async def view_books(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - view extra files handler", e)
 
+
 # create delete book canceler
 @dp.message_handler(lambda message: message.text == "الغاء الحذف" ,state=Del_File)
 async def cancel_del_book(message: types.Message, state: FSMContext):
     try:
-        if user_manager.get_manager_stage(message.from_user.id) == False:
+        if not user_manager.get_manager_stage(message.from_user.id):
             await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
         else:
             await state.finish()
@@ -131,7 +137,8 @@ async def cancel_del_book(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - delete book canceler", e)
 
-# create delete book 
+
+# create delete book
 @dp.message_handler(lambda message: message.text == "حذف كتاب ❌")
 async def del_book_handler(message: types.Message):
     try:
@@ -140,29 +147,34 @@ async def del_book_handler(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - delete book", e)
 
+
 # create delete book by name handler
 @dp.message_handler(state=Del_File.temp)
 async def del_book_command_handler(message: types.Message, state: FSMContext):
     await manager_menu_handler.del_book_command(message, state, bot)
 
+
 # create delete extra file canceler
 @dp.message_handler(lambda message: message.text == "الغاء حذف الملف" ,state=Del_Extra_File)
 async def cancel_del_book(message: types.Message, state: FSMContext):
-    if user_manager.get_manager_stage(message.from_user.id) == False:
+    if not user_manager.get_manager_stage(message.from_user.id):
         await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
     else:
         await state.finish()
         await message.answer("تم الالغاء بنجاح", reply_markup=get_user_markup(message.from_user.id))
 
-# create delete extra file 
+
+# create delete extra file
 @dp.message_handler(lambda message: message.text == "حذف ملف ❌")
 async def del_book_handler(message: types.Message):
     await manager_menu_handler.Del_extra_file(message, bot)
+
 
 # create delete extra file by name handler
 @dp.message_handler(state=Del_Extra_File.temp)
 async def del_book_command_handler(message: types.Message, state: FSMContext):
     await manager_menu_handler.del_extra_file_command(message, state, bot)
+
 
 # create upload book handler
 @dp.message_handler(lambda message: message.text in get_files_list(user_manager.check_user_stage(message.from_user.id)), state=GetBook.temp)
@@ -176,6 +188,7 @@ async def upload_book(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - upload book handler", e)
 
+
 # create upload extra handler
 @dp.message_handler(lambda message: message.text in get_extra_files_list(user_manager.check_user_stage(message.from_user.id)), state=GetFile.temp)
 async def upload_book(message: types.Message, state: FSMContext):
@@ -188,7 +201,8 @@ async def upload_book(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - upload extra handler", e)
 
-# create tools option at main meun 
+
+# create tools option at main meun
 @dp.message_handler(lambda message: message.text == "أدوات 🧰")
 async def tools(message: types.Message):
     try:
@@ -196,6 +210,7 @@ async def tools(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - tools option at main meun ", e)
+
 
 # create add book cancler
 @dp.message_handler(lambda message: message.text == 'الغاء الاضافة', state=AddNewFile)
@@ -214,6 +229,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - add book cancler ", e)
 
+
 # create add extra file cancler
 @dp.message_handler(lambda message: message.text == 'الغاء الاضافة', state=AddNewExtraFile)
 async def cancel_handler(message: types.Message, state: FSMContext):
@@ -231,7 +247,8 @@ async def cancel_handler(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - add book cancler ", e)
 
-# create add book 
+
+# create add book
 @dp.message_handler(lambda message: message.text == "اضافة كتاب 📕")
 async def pdf_message(message: types.Message):
     try:
@@ -239,6 +256,7 @@ async def pdf_message(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - add book ", e)
+
 
 # get file name
 @dp.message_handler(state=AddNewFile.file_name)
@@ -250,6 +268,7 @@ async def Add_file_get_name(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - get file name", e)
 
+
 # download file
 @dp.message_handler(state=AddNewFile.file_path, content_types=ContentTypes.DOCUMENT)
 async def Add_file_download(message: types.Message, state: FSMContext):
@@ -259,6 +278,7 @@ async def Add_file_download(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - download file", e)
+
 
 # create add file command
 # create add file cancler
@@ -278,7 +298,8 @@ async def cancel_handler(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - add file cancler", e)
 
-# create add file 
+
+# create add file
 @dp.message_handler(lambda message: message.text == "اضافة ملف 📎")
 async def pdf_message(message: types.Message):
     try:
@@ -286,6 +307,7 @@ async def pdf_message(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - add file", e)
+
 
 # get file name
 @dp.message_handler(state=AddNewExtraFile.file_name)
@@ -297,6 +319,7 @@ async def Add_file_get_name(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - get file name", e)
 
+
 # download extra file
 @dp.message_handler(state=AddNewExtraFile.file_path, content_types=ContentTypes.DOCUMENT)
 async def Add_file_download(message: types.Message, state: FSMContext):
@@ -307,6 +330,7 @@ async def Add_file_download(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - download extra file", e)
 
+
 #create my info message
 @dp.message_handler(lambda message: message.text == "معلوماتي ❓")
 async def my_info_message(message: types.Message):
@@ -316,11 +340,12 @@ async def my_info_message(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - my info message", e)
 
+
 # create back to main menu message handler
 @dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية 🏠")
 async def back_to_main_menu(message: types.Message):
     try:
-        if user_manager.check_user_exist(message.from_user.id) == False:
+        if not user_manager.check_user_exist(message.from_user.id):
             await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
@@ -328,11 +353,12 @@ async def back_to_main_menu(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - back to main menu message handler", e)
 
+
 # create back to main menu message handler for view book
 @dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية")
 async def back_to_main_menu(message: types.Message):
     try:
-        if user_manager.check_user_exist(message.from_user.id) == False:
+        if not user_manager.check_user_exist(message.from_user.id):
             await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
@@ -340,11 +366,12 @@ async def back_to_main_menu(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - back to main menu message handler for view book", e)
 
+
 # create back to main menu message handler for view book
 @dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية", state=GetBook.temp)
 async def back_to_main_menu(message: types.Message, state: FSMContext):
     try:
-        if user_manager.check_user_exist(message.from_user.id) == False:
+        if not user_manager.check_user_exist(message.from_user.id):
             await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
@@ -354,11 +381,12 @@ async def back_to_main_menu(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - back to main menu message handler for view book", e)
 
+
 # create back to main menu message handler for view files
 @dp.message_handler(lambda message: message.text == "الرجوع للقائمة الرئيسية", state=GetFile.temp)
 async def back_to_main_menu(message: types.Message, state: FSMContext):
     try:
-        if user_manager.check_user_exist(message.from_user.id) == False:
+        if not user_manager.check_user_exist(message.from_user.id):
             await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
@@ -383,17 +411,18 @@ async def view_hw(message: types.Message):
 @dp.message_handler(commands='deluser')
 async def user_managment(message: types.Message):
     try:
-        if user_manager.check_admin(message.from_user.id) == False:
+        if not user_manager.check_admin(message.from_user.id):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
         else:
             m = message.get_full_command()
-            if user_manager.del_user(m[1]) == True:
+            if user_manager.del_user(m[1]):
                 await message.reply("تم الحذف بنجاح")
             else:
                 await message.reply("حدث خطأ عند الحذف")
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - delete user command handl", e)
+
 
 # create photos menu stage
 @dp.message_handler(lambda message: message.text == "الصور 📷")
@@ -423,6 +452,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - input canceler ", e)
 
+
 # create hw all week message handler
 @dp.message_handler(lambda message: message.text == "عرض واجبات الاسبوع 📖")
 async def view_hw(message: types.Message):
@@ -431,6 +461,7 @@ async def view_hw(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - hw all week message handler", e)
+
 
 # create view hw message handler
 @dp.message_handler(lambda message: message.text == "اختيار يوم 📋")
@@ -441,6 +472,7 @@ async def select_hw(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - view hw message handler", e)
 
+
 @dp.message_handler(state=Viewhw.day)
 async def view_by_day(message: types.Message, state: FSMContext):
     try:
@@ -449,6 +481,7 @@ async def view_by_day(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - view hw message handler", e)
+
 
 # create add HW command handler
 @dp.message_handler(lambda message: message.text == 'اضافة واجب 📝')
@@ -459,6 +492,7 @@ async def HW_managment(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - add HW command handler", e)
 
+
 # get the day from the user
 @dp.message_handler(state=AddHW.day)
 async def process_day(message: types.Message, state: FSMContext):
@@ -468,6 +502,7 @@ async def process_day(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - get the day from the user", e)
+
 
 # get add hw message handler
 @dp.message_handler(state=AddHW.hw)
@@ -489,6 +524,7 @@ async def HW_managment(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - delete HW command handler", e)
 
+
 # get the day from the user
 @dp.message_handler(state=DelHW.day)
 async def process_day(message: types.Message, state: FSMContext):
@@ -499,6 +535,7 @@ async def process_day(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - get the day from the user", e)
 
+
 # send announcement for a stage by manager
 @dp.message_handler(lambda message: message.text == 'أرسال اعلان 📢')
 async def anno_managment(message: types.Message):
@@ -507,6 +544,7 @@ async def anno_managment(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - send announcement for a stage by manager", e)
+
 
 # get the message from the manager and send it to the student
 @dp.message_handler(state=Anno.m)
@@ -518,6 +556,7 @@ async def process_message(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - get the message from the manager and send it to the student", e)
 
+
 # create add manager command handler
 @dp.message_handler(lambda message: message.text == 'اضافة مشرف 💂')
 async def user_managment(message: types.Message):
@@ -526,6 +565,7 @@ async def user_managment(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - add manager command handler",e)
+
 
 # get the stage from the user
 @dp.message_handler(state=AddManager.stage)
@@ -536,6 +576,7 @@ async def process_name(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - get the stage from the user", e)
+
 
 # get user id form the user and end data entry
 @dp.message_handler(lambda message: message.text.isdigit(), state=AddManager.uid)
@@ -548,7 +589,6 @@ async def process_age(message: types.Message, state: FSMContext):
         await error_reporter.report(message, bot, "main - get user id form the user and end data entry", e)
 
 
-
 # create delete manager command handler
 @dp.message_handler(lambda message: message.text == 'حذف مشرف 💂')
 async def user_managment(message: types.Message):
@@ -557,6 +597,7 @@ async def user_managment(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - delete manager command handler", e)
+
 
 # get the stage from the user
 @dp.message_handler(state=DelManager.stage)
@@ -568,6 +609,7 @@ async def process_name(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - get the stage from the user", e)
 
+
 # get user id form the user and end data entry
 @dp.message_handler(lambda message: message.text.isdigit(), state=DelManager.uid)
 async def process_age(message: types.Message, state: FSMContext):
@@ -578,6 +620,7 @@ async def process_age(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - get user id form the user and end data entry", e)
 
+
 # send announcement for all stages by admin
 @dp.message_handler(lambda message: message.text == 'أرسال اعلان للجميع 📢')
 async def anno_managment(message: types.Message):
@@ -586,6 +629,7 @@ async def anno_managment(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - send announcement for all stages by admin", e)
+
 
 # get the message from the manager and send it to the student
 @dp.message_handler(state=AnnoAll.m)
@@ -597,7 +641,8 @@ async def process_message(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - get the message from the manager and send it to the student", e)
 
-# create list of user id and username for all users 
+
+# create list of user id and username for all users
 @dp.message_handler(lambda message: message.text == "عرض جميع المستخدمين 📋")
 async def make_list(message: types.Message):
     try:
@@ -606,7 +651,8 @@ async def make_list(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - list of user id and username for all users ",e)
 
-# create admin permissions list getter 
+
+# create admin permissions list getter
 @dp.message_handler(lambda message: message.text == "عرض صلاحيات الادمن 👮")
 async def view_admin_permissions(message: types.Message):
     try:
@@ -625,6 +671,7 @@ async def view_man_permissions(message: types.Message):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - manager premissions list getter", e)
 
+
 # create merge pdfs message handler
 # create merge pdf canceler handler
 @dp.message_handler(lambda message: message.text == "الغاء الدمج", state=MergePdf)
@@ -636,6 +683,7 @@ async def merge(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - merge pdf canceler handler", e)
 
+
 # ask the user about the file name
 @dp.message_handler(lambda message: message.text == "دمج ملفات pdf")
 async def merge_file_name(message: types.Message, state: FSMContext):
@@ -645,6 +693,7 @@ async def merge_file_name(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - ask the user about the file name", e)
+
 
 # get the file name
 @dp.message_handler(state=MergePdf.file_name)
@@ -667,6 +716,7 @@ async def pdf_getter(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - pdfs getter", e)
 
+
 # create merge pdf command handler
 @dp.message_handler(lambda message: message.text == "دمج" ,state=MergePdf.temp)
 async def merge_handler(message: types.Message, state: FSMContext):
@@ -676,6 +726,7 @@ async def merge_handler(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - merge pdf command handler", e)
+
 
 # create images to pdf message handler
 # create cancel images merge to pdf message handler
@@ -710,6 +761,7 @@ async def merge(message: types.Message, state: FSMContext):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - get the images from the user", e)
 
+
 # create merge images command handler
 @dp.message_handler(lambda message: message.text == "دمج" ,state=MergeImages.temp)
 async def merge(message: types.Message, state: FSMContext):
@@ -719,6 +771,7 @@ async def merge(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - merge images command handler", e)
+
 
 # create images downloader
 @dp.message_handler(state=MergeImages.temp, content_types=ContentTypes.ANY)
