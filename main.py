@@ -696,10 +696,13 @@ async def merge_file_name(message: types.Message, state: FSMContext):
 
 
 # get the file name
-@dp.message_handler(state=MergePdf.file_name)
+@dp.message_handler(state=MergePdf.file_name, content_types=ContentTypes.ANY)
 async def get_file_name(message: types.Message, state: FSMContext):
     try:
-        await tools_handler.MergePdf_get_file_name(message, state, bot)
+        if message.document:
+            await message.answer("ارسل اسم الملف اولا", reply_markup=custom_markup(["الغاء الدمج"]))
+        else:
+            await tools_handler.MergePdf_get_file_name(message, state, bot)
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
@@ -752,10 +755,13 @@ async def merge(message: types.Message, state: FSMContext):
 
 
 # get the images from the user
-@dp.message_handler(state=MergeImages.file_name)
+@dp.message_handler(state=MergeImages.file_name, content_types=ContentTypes.ANY)
 async def merge(message: types.Message, state: FSMContext):
     try:
-        await tools_handler.Imgs2Pdf_get_images(message, state, bot)
+        if message.document or message.photo:
+            await message.answer("ارسل اسم الملف اولا", reply_markup=custom_markup(["الغاء الدمج"]))
+        else:
+            await tools_handler.Imgs2Pdf_get_images(message, state, bot)
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
