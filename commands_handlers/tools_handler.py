@@ -1,8 +1,6 @@
-import asyncio
 import random
 import string
 import os
-from aiogram import types
 from cmds.user_manager import check_user_exist
 from cmds.markup_manager import get_user_markup, custom_markup
 from cmds.classes import MergeImages, MergePdf
@@ -11,7 +9,7 @@ from cmds import error_reporter
 
 
 async def Imgs2Pdf_file_name(message, state, bot):
-    if check_user_exist(message.from_user.id) == False:
+    if not check_user_exist(message.from_user.id):
         await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
     else:
         try:
@@ -29,8 +27,9 @@ async def Imgs2Pdf_file_name(message, state, bot):
             await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
             await error_reporter.report(message, bot, "Imgs2Pdf_file_name", e)
 
+
 async def Imgs2Pdf_get_images(message, state, bot):
-    if check_user_exist(message.from_user.id) == False:
+    if not check_user_exist(message.from_user.id):
         await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
     else:
         try:
@@ -46,6 +45,7 @@ async def Imgs2Pdf_get_images(message, state, bot):
             await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
             await error_reporter.report(message, bot, "Imgs2Pdf_get_images", e)
 
+
 async def Imgs2Pdf_cancel_handler(message, state, bot):
     try:
         async with state.proxy() as data:
@@ -58,6 +58,7 @@ async def Imgs2Pdf_cancel_handler(message, state, bot):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "Imgs2Pdf_cancel_handler", e)
+
 
 async def Imgs2Pdf_Imgs_downloader(message, state, bot):
     try:
@@ -101,9 +102,10 @@ async def Imgs2Pdf_merge_handler(message, state, bot):
         await message.answer("فشل دمج الملفات", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "Imgs2Pdf_merge_handler", e)
 
+
 async def MergePdf_ask_file_name(message, state, bot):
     try:
-        if check_user_exist(message.from_user.id) == False:
+        if not check_user_exist(message.from_user.id):
             await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
         else:
             await MergePdf.folder.set()
@@ -118,6 +120,7 @@ async def MergePdf_ask_file_name(message, state, bot):
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "MergePdf_ask_file_name", e)
 
+
 async def MergePdf_get_file_name(message, state, bot):
     try:
         async with state.proxy() as data:
@@ -129,6 +132,7 @@ async def MergePdf_get_file_name(message, state, bot):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "MergePdf_get_file_name", e)
+
 
 async def MergePdf_cancel_handler(message, state, bot):
     try:
@@ -142,6 +146,8 @@ async def MergePdf_cancel_handler(message, state, bot):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "MergePdf_cancel_handler", e)
+
+
 
 async def MergePdf_get_files(message, state, bot):
     try:
@@ -160,6 +166,7 @@ async def MergePdf_get_files(message, state, bot):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "MergePdf_get_files", e)
+
 
 async def MergePdf_merge(message, state, bot):
     try:

@@ -1,6 +1,3 @@
-import asyncio
-from aiogram import types
-
 async def unknow_messages(message):
     await message.reply("""
 عذرا لم افهم ماذا تقول
