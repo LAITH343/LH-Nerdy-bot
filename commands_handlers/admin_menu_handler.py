@@ -4,22 +4,13 @@ from cmds.classes import AnnoAll, AddManager, DelManager
 from cmds import error_reporter
 
 
-async def create_users_list():
-    message_list = ""
-    uid = get_users_uid()
-    username = get_all_usernames()
-    for i in range(len(get_all_usernames())):
-            message_list +=f"أي دي المستخدم {uid[i]} يوزر المستخدم @{username[i]}\n"
-    return message_list
-
-
 async def View_all_users(message, bot):
     try:
         if not check_admin(message.from_user.id):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
         else:
-            message_text = await create_users_list()
-            await message.answer(message_text, reply_markup=get_user_markup(message.from_user.id))
+            for user in await get_all_usernames():
+                await message.answer(user, reply_markup=get_user_markup(message.from_user.id))
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "View_all_users", e)

@@ -125,14 +125,30 @@ def get_users_uid():
     return ul
 
 
-def get_all_usernames():
+async def get_all_usernames():
     db = sqlite3.connect("storage/users.db")
     c = db.cursor()
-    c.execute("SELECT username FROM users_info")
+    c.execute("SELECT * FROM users_info")
     users_name = c.fetchall()
     userlist = []
-    for user in users_name:
-        userlist.append(user[0])
+    translate = {
+        "stage1": "اولى",
+        "stage2": "ثانية",
+        "stage3": "ثالثة",
+        "stage4": "رابعة",
+        "False": "لا",
+        "True": "نعم"
+    }
+    for i in users_name:
+        userlist.append(f"""
+الأي دي [{i[0]}] 
+الاسم [{i[1]}] 
+اليوزر [@{i[2]}] 
+المرحلة [{translate[i[3]]}] 
+محضور [{translate[i[4]]}] 
+مشرف [{translate[i[5]]}] 
+ادمن [{translate[i[6]]}]
+""")
     db.close()
     return userlist
 
