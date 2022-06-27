@@ -28,10 +28,11 @@ def check_admin(uid):
     c = db.cursor()
     c.execute("SELECT admin FROM users_info WHERE admin=? AND id=?", ("True", str(uid),))
     check = c.fetchone()
-    db.close()
     if check is not None:
+        db.close()
         return True
     else:
+        db.close()
         return False
 
 
@@ -40,10 +41,11 @@ def check_user_exist(uid):
     c = db.cursor()
     c.execute("SELECT id FROM users_info WHERE id=?", (str(uid),))
     check = c.fetchone()
-    db.close()
     if check is not None:
+        db.close()
         return True
     else:
+        db.close()
         return False
 
 
@@ -52,10 +54,11 @@ def check_user_stage(uid):
     c = db.cursor()
     c.execute("SELECT stage FROM users_info WHERE id=?", (str(uid),))
     stage = c.fetchone()
-    db.close()
     if stage is not None:
+        db.close()
         return stage[0]
     else:
+        db.close()
         return False
 
 
@@ -64,10 +67,11 @@ def get_manager_stage(uid):
     c = db.cursor()
     c.execute("SELECT stage FROM users_info WHERE id=? AND manager=?", (str(uid), "True",))
     stage = c.fetchone()
-    db.close()
     if stage is not None:
+        db.close()
         return stage[0]
     else:
+        db.close()
         return False
 
 
@@ -95,12 +99,13 @@ def add_manager(uid):
     c = db.cursor()
     c.execute("SELECT id FROM users_info WHERE id=?", (str(uid),))
     stage = c.fetchone()
-    db.close()
     if stage is not None:
         c.execute("Update users_info set manager=? WHERE id=?", ("True", uid))
         db.commit()
+        db.close()
         return True
     else:
+        db.close()
         return False
 
 
