@@ -259,7 +259,7 @@ async def pdf_message(message: types.Message):
 
 
 # get file name
-@dp.message_handler(state=AddNewFile.file_name)
+@dp.message_handler(state=AddNewFile.file_name, content_types=ContentTypes.ANY)
 async def Add_file_get_name(message: types.Message, state: FSMContext):
     try:
         await manager_menu_handler.Add_book_get_file_name(message, state, bot)
@@ -310,7 +310,7 @@ async def pdf_message(message: types.Message):
 
 
 # get file name
-@dp.message_handler(state=AddNewExtraFile.file_name)
+@dp.message_handler(state=AddNewExtraFile.file_name, content_types=ContentTypes.ANY)
 async def Add_file_get_name(message: types.Message, state: FSMContext):
     try:
         await manager_menu_handler.Add_extra_file_get_file_name(message, state, bot)
@@ -579,7 +579,7 @@ async def process_name(message: types.Message, state: FSMContext):
 
 
 # get user id form the user and end data entry
-@dp.message_handler(lambda message: message.text.isdigit(), state=AddManager.uid)
+@dp.message_handler(lambda message: message.text, state=AddManager.uid)
 async def process_age(message: types.Message, state: FSMContext):
     try:
         await admin_menu_handler.Add_manager_get_uid_and_add(message, state, bot)
@@ -611,7 +611,7 @@ async def process_name(message: types.Message, state: FSMContext):
 
 
 # get user id form the user and end data entry
-@dp.message_handler(lambda message: message.text.isdigit(), state=DelManager.uid)
+@dp.message_handler(lambda message: message.text, state=DelManager.uid)
 async def process_age(message: types.Message, state: FSMContext):
     try:
         await admin_menu_handler.Delete_manager_get_uid_and_del(message, state, bot)

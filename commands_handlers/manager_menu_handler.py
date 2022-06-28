@@ -110,11 +110,14 @@ async def Add_book(message, bot):
 
 async def Add_book_get_file_name(message, state, bot):
     try:
-        async with state.proxy() as data:
-            data["file_name"] = message.text
+        if not message.text:
+            await message.answer("ارسل اسم الملف اولا")
+        else:
+            async with state.proxy() as data:
+                data["file_name"] = message.text
 
-        await AddNewFile.next()
-        await bot.send_message(message.chat.id, "ارسل الملف", reply_markup=custom_markup(["الغاء الاضافة"]))
+            await AddNewFile.next()
+            await bot.send_message(message.chat.id, "ارسل الملف", reply_markup=custom_markup(["الغاء الاضافة"]))
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
@@ -184,11 +187,14 @@ async def Add_extra_file(message, bot):
 
 async def Add_extra_file_get_file_name(message, state, bot):
     try:
-        async with state.proxy() as data:
-            data["file_name"] = message.text
+        if not message.text:
+            await message.answer("ارسل اسم الملف اولا")
+        else:
+            async with state.proxy() as data:
+                data["file_name"] = message.text
 
-        await AddNewExtraFile.next()
-        await bot.send_message(message.chat.id, "ارسل الملف", reply_markup=custom_markup(["الغاء الاضافة"]))
+            await AddNewExtraFile.next()
+            await bot.send_message(message.chat.id, "ارسل الملف", reply_markup=custom_markup(["الغاء الاضافة"]))
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))

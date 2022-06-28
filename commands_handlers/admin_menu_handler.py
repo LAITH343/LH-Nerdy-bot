@@ -49,7 +49,7 @@ async def Delete_manager(message, bot):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
         else:
             await DelManager.stage.set()
-            await message.reply("اختر المرحلة", reply_markup=custom_markup(["stage1","stage2","stage3","stage4","الغاء الادخال"]))
+            await message.reply("اختر المرحلة", reply_markup=custom_markup(["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة","الغاء الادخال"]))
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "Delete_manager", e)
@@ -57,8 +57,14 @@ async def Delete_manager(message, bot):
 
 async def Delete_manager_get_stage(message, state, bot):
     try:
+        stage_translate = {
+            "مرحلة اولى": "stage1",
+            "مرحلة ثانية": "stage2",
+            "مرحلة ثالثة": "stage3",
+            "مرحلة رابعة": "stage4"
+        }
         async with state.proxy() as data:
-            data['stage'] = message.text
+            data['stage'] = stage_translate[message.text]
 
         await DelManager.next()
         await message.reply("ارسل الID الخاص بالمستخدم", reply_markup=custom_markup(["الغاء الادخال"]))
@@ -70,11 +76,14 @@ async def Delete_manager_get_stage(message, state, bot):
 
 async def Delete_manager_get_uid_and_del(message, state, bot):
     try:
-        async with state.proxy() as data:
-            data['uid'] = int(message.text)
-            del_manager(data['uid'])
-            await message.reply("تم الحذف بنجاح", reply_markup=get_user_markup(message.from_user.id))
-        await state.finish()
+        if not message.text.isdigit():
+            await message.answer("يرجى ارسال ارقام فقط")
+        else:
+            async with state.proxy() as data:
+                data['uid'] = int(message.text)
+                del_manager(data['uid'])
+                await message.reply("تم الحذف بنجاح", reply_markup=get_user_markup(message.from_user.id))
+            await state.finish()
     except Exception as e:
         await state.finish()
         await message.answer("فشل حذف المشرف", reply_markup=get_user_markup(message.from_user.id))
@@ -87,7 +96,7 @@ async def Add_manager(message, bot):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
         else:
             await AddManager.stage.set()
-            await message.reply("اختر المرحلة", reply_markup=custom_markup(["stage1","stage2","stage3","stage4","الغاء الادخال"])) # add_del_man_stage_input_markup
+            await message.reply("اختر المرحلة", reply_markup=custom_markup(["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة","الغاء الادخال"])) # add_del_man_stage_input_markup
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "Add_manager", e)
@@ -95,8 +104,14 @@ async def Add_manager(message, bot):
 
 async def Add_manager_get_stage(message, state, bot):
     try:
+        stage_translate = {
+            "مرحلة اولى": "stage1",
+            "مرحلة ثانية": "stage2",
+            "مرحلة ثالثة": "stage3",
+            "مرحلة رابعة": "stage4"
+        }
         async with state.proxy() as data:
-            data['stage'] = message.text
+            data['stage'] = stage_translate[message.text]
 
         await AddManager.next()
         await message.reply("ارسل الID الخاص بالمستخدم", reply_markup=custom_markup(["الغاء الادخال"]))
@@ -108,11 +123,14 @@ async def Add_manager_get_stage(message, state, bot):
 
 async def Add_manager_get_uid_and_add(message, state, bot):
     try:
-        async with state.proxy() as data:
-            data['uid'] = int(message.text)
-            add_manager(data['uid'])
-            await message.reply("تم الاضافة بنجاح", reply_markup=get_user_markup(message.from_user.id))
-        await state.finish()
+        if not message.text.isdigit():
+            await message.answer("يرجى ارسال ارقام فقط")
+        else:
+            async with state.proxy() as data:
+                data['uid'] = int(message.text)
+                add_manager(data['uid'])
+                await message.reply("تم الاضافة بنجاح", reply_markup=get_user_markup(message.from_user.id))
+            await state.finish()
     except Exception as e:
         await state.finish()
         await message.answer("فشل اضافة المشرف", reply_markup=get_user_markup(message.from_user.id))
