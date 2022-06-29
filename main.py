@@ -7,10 +7,12 @@ from cmds import user_manager, error_reporter
 from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, Del_File, Selcet_Stage, AddNewExtraFile, Del_Extra_File, GetBook, GetFile
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, Del_File, AddNewExtraFile, Del_Extra_File, GetBook, GetFile, AddNewUser
 from cmds.markup_manager import get_user_markup, custom_markup
+from cmds.user_manager import check_user_not_req, check_user_exist, update_user_info
+from commands_handlers.manager_menu_handler import Add_New_user, Add_New_user_command
 from commands_handlers.unkown_message_handler import unknow_messages
-from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler, new_user_handler
+from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler
 from cmds.books_manager import get_files_list, get_file_by_name, get_extra_file_by_name, get_extra_files_list
 
 
@@ -58,29 +60,19 @@ async def add_admin(message: types.Message, state: FSMContext):
     else:
         await message.answer("ليس لديك الصلاحيات ﻷجراء هذا الامر")
 
+@dp.message_handler(lambda message: not check_user_exist(message.from_user.id))
+async def Not_inside_sys(message: types.Message):
+    await message.answer(f"أنت غير مسجل اطلب من ممثل المرحلة أضافتك\n الID الخاص بك {message.from_user.id}")
 
-# add new user
-@dp.message_handler(state=Selcet_Stage.stage)
-async def Add_new_user(message: types.Message, state: FSMContext):
+# check user not req
+@dp.message_handler(lambda message: check_user_not_req(message.from_user.id) == True)
+async def Get_user_info(message: types.Message):
     try:
-        await new_user_handler.Add_user(message, state, bot)
-    except Exception as e:
-        await state.finish()
-        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
-        await error_reporter.report(message, bot, "main - add new user", e)
-
-
-# create select stage menu 
-@dp.message_handler(lambda message: message.text == "اختيار المرحلة")
-async def stage_select_menu(message: types.Message):
-    try:
-        if user_manager.check_user_exist(message.from_user.id):
-            await bot.send_message(message.chat.id, "لا يمكنك الاختيار أنت مسجل مسبقا", reply_markup=get_user_markup(message.from_user.id))
-        else:
-            await new_user_handler.Select_stage(message, bot)
+        update_user_info(message.from_user.id, message.from_user.full_name, message.from_user.username)
+        await message.answer("أهلا بك", reply_markup=get_user_markup(message.from_user.id))
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
-        await error_reporter.report(message, bot, "main - select stage menu", e)
+        await error_reporter.report(message, bot, "main - check user not req", e)
 
 
 # create start message/command handler
@@ -555,6 +547,30 @@ async def process_message(message: types.Message, state: FSMContext):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - get the message from the manager and send it to the student", e)
+
+@dp.message_handler(text=("الغاء أضافة الطالب"), state=AddNewUser)
+async def cancel_add_user(message: types.Message, state: FSMContext):
+    await state.finish()
+    await message.answer("تم الغاء الادخال", reply_markup=get_user_markup(message.from_user.id))
+
+# create add student handler
+@dp.message_handler(text="أضافة طالب")
+async def Add_user_handler(message: types.Message):
+    try:
+        await Add_New_user(message, bot)
+    except Exception as e:
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "main - add student handler", e)
+
+# get user id and add it
+@dp.message_handler(state=AddNewUser.uid)
+async def Add_User_command_handler(message: types.Message, state: FSMContext):
+    try:
+        await Add_New_user_command(message, state, bot)
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "main - get user id and add it", e)
 
 
 # create add manager command handler

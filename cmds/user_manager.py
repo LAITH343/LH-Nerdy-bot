@@ -78,8 +78,7 @@ def get_manager_stage(uid):
 def add_user(stage, uid, name, username):
     db = sqlite3.connect("storage/users.db")
     c = db.cursor()
-    c.execute("INSERT INTO users_info VALUES (?, ?, ?, ?, ?, ?, ?)",
-              (str(uid), name, username, stage, "False", "False", "False"))
+    c.execute("INSERT INTO users_info VALUES (?, ?, ?, ?, ?, ?, ?)", (str(uid), name, username, stage, "False", "False", "False"))
     db.commit()
     db.close()
     return True
@@ -168,3 +167,25 @@ def get_users_uid_by_stage(stage):
         ulbystage.append(id[0])
     db.close()
     return ulbystage
+
+def check_user_not_req(uid):
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("SELECT name, username FROM users_info WHERE name=? AND username=? AND id=?", ("notset", "notset", str(uid),))
+    ids = c.fetchone()
+    if ids is not None:
+        db.close()
+        return True
+    else:
+        db.close()
+        return False
+
+def update_user_info(uid, name, username):
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("Update users_info set name=?, username=? WHERE id=?", (name, username, str(uid)))
+    db.commit()
+    db.close()
+    return True
+
+

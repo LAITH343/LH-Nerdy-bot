@@ -1,6 +1,6 @@
-from cmds.user_manager import get_manager_stage, check_user_stage, get_users_uid_by_stage
+from cmds.user_manager import get_manager_stage, check_user_stage, get_users_uid_by_stage, add_user
 from cmds.markup_manager import get_user_markup, custom_markup, del_books_markup, del_extra_file_markup
-from cmds.classes import DelHW, AddHW, Anno, Del_File, AddNewFile, AddNewExtraFile, Del_Extra_File
+from cmds.classes import DelHW, AddHW, Anno, Del_File, AddNewFile, AddNewExtraFile, Del_Extra_File, AddNewUser
 from cmds.hw_adder import add_hw
 from cmds.books_manager import add_file, del_file, get_files_list, del_extra_file, add_extra_file, get_extra_files_list
 from cmds import error_reporter
@@ -247,3 +247,28 @@ async def del_extra_file_command(message, state, bot):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "del_extra_file_command", e)
+
+
+async def Add_New_user(message, bot):
+    try:
+        if not get_manager_stage(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+        else:
+            await AddNewUser.uid.set()
+            await message.answer("ارسل ID الطالب", reply_markup=custom_markup(["الغاء أضافة الطالب"]))
+    except Exception as e:
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "Add_New_user", e)
+
+
+async def Add_New_user_command(message, state, bot):
+    try:
+        async with state.proxy() as data:
+            data["uid"] = message.txt
+            add_user(get_manager_stage(message.from_user.id), data["uid"], "notset", "notset")
+        await state.finish()
+        await message.answer("تم أضافة الطالب")
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "Add_New_user_command", e)

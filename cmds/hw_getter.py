@@ -14,7 +14,7 @@ def get_hw(stage, day):
 	config.read("storage/hw.ini")
 	value = config.get(stage, day)
 	return f" ---- {day} ----\n {value}"
-	config.close()
+
 
 def get_hw_allweek(stage):
 	config = configparser.ConfigParser()
@@ -31,5 +31,4 @@ def get_hw_allweek(stage):
 		value = config.get(stage, key)
 		week += f"---- {key} ----\n {value}\n"
 	return week
-	config.close()
 

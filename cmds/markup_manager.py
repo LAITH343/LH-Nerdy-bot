@@ -28,6 +28,7 @@ def admin_markup():
 
 def manager_markup():
 	man_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+	man_markup.add("أضافة طالب")
 	man_markup.add("اضافة واجب 📝", "حذف واجب 📝")
 	man_markup.add("اضافة كتاب 📕", "حذف كتاب ❌")
 	man_markup.add("اضافة ملف 📎", "حذف ملف ❌")
