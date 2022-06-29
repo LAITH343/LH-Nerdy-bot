@@ -267,7 +267,7 @@ async def Add_New_user_command(message, state, bot):
             data["uid"] = message.text
             add_user(get_manager_stage(message.from_user.id), data["uid"], "notset", "notset")
         await state.finish()
-        await message.answer("تم أضافة الطالب")
+        await message.answer("تم أضافة الطالب", reply_markup=get_user_markup(message.from_user.id))
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
