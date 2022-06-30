@@ -1,4 +1,5 @@
-from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_users_uid
+from cmds.logger import send_log
+from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_users_uid, get_user_username
 from cmds.markup_manager import get_user_markup, custom_markup
 from cmds.classes import AnnoAll, AddManager, DelManager
 from cmds import error_reporter
@@ -36,6 +37,7 @@ async def Get_anno_msg_and_send(message, state, bot):
             for user in get_users_uid():
                 await bot.send_message(user, data['m'])
             await message.reply("تم ارسال الاعلان بنجاح", reply_markup=get_user_markup(message.from_user.id))
+            await send_log(message, bot, "ارسال اعلان للجميع", f"تم ارسال\n{data['m']}")
         await state.finish()
     except Exception as e:
         await state.finish()
@@ -79,10 +81,17 @@ async def Delete_manager_get_uid_and_del(message, state, bot):
         if not message.text.isdigit():
             await message.answer("يرجى ارسال ارقام فقط")
         else:
+            translate = {
+                "stage1": "اولى",
+                "stage2": "ثانية",
+                "stage3": "ثالثة",
+                "stage4": "رابعة",
+            }
             async with state.proxy() as data:
                 data['uid'] = int(message.text)
                 del_manager(data['uid'])
                 await message.reply("تم الحذف بنجاح", reply_markup=get_user_markup(message.from_user.id))
+                await send_log(message, bot, "حذف مشرف", f"تم حذف @{get_user_username(data['uid'])} مشرف مرحلة {translate[data['stage']]}")
             await state.finish()
     except Exception as e:
         await state.finish()
@@ -126,10 +135,17 @@ async def Add_manager_get_uid_and_add(message, state, bot):
         if not message.text.isdigit():
             await message.answer("يرجى ارسال ارقام فقط")
         else:
+            translate = {
+                "stage1": "اولى",
+                "stage2": "ثانية",
+                "stage3": "ثالثة",
+                "stage4": "رابعة",
+            }
             async with state.proxy() as data:
                 data['uid'] = int(message.text)
                 add_manager(data['uid'])
                 await message.reply("تم الاضافة بنجاح", reply_markup=get_user_markup(message.from_user.id))
+                await send_log(message, bot, "أضافة مشرف", f"تم أضافة @{get_user_username(data['uid'])} مشرف للمرحلة {translate[data['stage']]}")
             await state.finish()
     except Exception as e:
         await state.finish()

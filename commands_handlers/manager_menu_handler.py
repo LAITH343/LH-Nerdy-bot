@@ -1,3 +1,4 @@
+from cmds.logger import send_log
 from cmds.user_manager import get_manager_stage, check_user_stage, get_users_uid_by_stage, add_user, del_user
 from cmds.markup_manager import get_user_markup, custom_markup, del_books_markup, del_extra_file_markup
 from cmds.classes import DelHW, AddHW, Anno, Del_File, AddNewFile, AddNewExtraFile, Del_Extra_File, AddNewUser, DelUser
@@ -25,6 +26,7 @@ async def Manager_del_hw_command(message, state, bot):
             stage = get_manager_stage(message.from_user.id)
             add_hw(stage, data['day'], "لا شيء")
             await message.reply("تم حذف الواجب", reply_markup=get_user_markup(message.from_user.id))
+            await send_log(message, bot, "حذف واجب", f"تم حذف واجب يوم {data['day']} ")
         await state.finish()
     except Exception as e:
         await state.finish()
@@ -62,6 +64,7 @@ async def Manager_add_hw_command(message, state, bot):
             data['hw'] = message.text
             add_hw(get_manager_stage(message.from_user.id), data['day'], data['hw'])
             await message.reply("تم الاضافة بنجاح", reply_markup=get_user_markup(message.from_user.id))
+            await send_log(message, bot, "أضافة واجب", f"تم أضافة واجب يوم {data['day']} الواجب هوة {data['hw']}")
         await state.finish()
     except Exception as e:
         await state.finish()
@@ -89,6 +92,7 @@ async def Manager_send_anno_command(message, state, bot):
             for user in get_users_uid_by_stage(get_manager_stage(message.from_user.id)):
                 await bot.send_message(user, data['m'])
             await message.reply("تم ارسال الاعلان بنجاح", reply_markup=get_user_markup(message.from_user.id))
+            await send_log(message, bot, "ارسال اعلان للمرحلة", f"الأعلان الذي تم ارساله \n{data['m']}")
         await state.finish()
     except Exception as e:
         await state.finish()
@@ -137,6 +141,7 @@ async def Add_book_command(message, state, bot):
             await add_file(get_manager_stage(message.from_user.id), data["file_name"], data["file_path"])
             await state.finish()
             await bot.send_message(message.chat.id, "تم اضافة الملف بنجاح", reply_markup=get_user_markup(message.from_user.id))
+            await send_log(message, bot, "أضافة كتاب", f"تم أضافة كتاب {data['file_name']}")
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
@@ -165,6 +170,7 @@ async def del_book_command(message, state, bot):
             else:
                 await del_file(get_manager_stage(message.from_user.id),message.text)
                 await message.answer("تم حذف الكتاب", reply_markup=get_user_markup(message.from_user.id))
+                await send_log(message, bot, "حذف كتاب", f"تم حذف كتاب {message.text}")
             await state.finish()
     except Exception as e:
         await state.finish()
@@ -213,6 +219,7 @@ async def Add_extra_file_command(message, state, bot):
             await add_extra_file(get_manager_stage(message.from_user.id), data["file_name"], data["file_path"])
             await state.finish()
             await bot.send_message(message.chat.id, "تم اضافة الملف بنجاح", reply_markup=get_user_markup(message.from_user.id))
+            await send_log(message, bot, "أضافة ملف", f"تم أضافة ملف {data['file_name']}")
     except Exception as e:
         await state.finish()
         await message.answer("فشل اضافة الملف", reply_markup=get_user_markup(message.from_user.id))
@@ -241,6 +248,7 @@ async def del_extra_file_command(message, state, bot):
             else:
                 await del_extra_file(get_manager_stage(message.from_user.id),message.text)
                 await message.answer("تم حذف الملف", reply_markup=get_user_markup(message.from_user.id))
+                await send_log(message, bot, "حذف ملف", f"تم حذف الملف {message.text}")
             await state.finish()
     except Exception as e:
         await state.finish()
@@ -262,11 +270,18 @@ async def Add_New_user(message, bot):
 
 async def Add_New_user_command(message, state, bot):
     try:
+        translate = {
+            "stage1": "اولى",
+            "stage2": "ثانية",
+            "stage3": "ثالثة",
+            "stage4": "رابعة",
+        }
         async with state.proxy() as data:
             data["uid"] = message.text
             add_user(get_manager_stage(message.from_user.id), data["uid"], "notset", "notset")
         await state.finish()
         await message.answer("تم أضافة الطالب", reply_markup=get_user_markup(message.from_user.id))
+        await send_log(message, bot, "أضافة طالب", f"تم أضافة {data['uid']} للمرحلة {translate[get_manager_stage(message.from_user.id)]}")
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
@@ -287,11 +302,18 @@ async def Del_user(message, bot):
 
 async def Del_user_command(message, state, bot):
     try:
+        translate = {
+            "stage1": "اولى",
+            "stage2": "ثانية",
+            "stage3": "ثالثة",
+            "stage4": "رابعة",
+        }
         async with state.proxy() as data:
             data["uid"] = message.text
             del_user(data["uid"], get_manager_stage(message.from_user.id))
         await state.finish()
         await message.answer("تم حذف الطالب", reply_markup=get_user_markup(message.from_user.id))
+        await send_log(message, bot, "حذف طالب",f"تم حذف {data['uid']} من المرحلة  {translate[get_manager_stage(message.from_user.id)]}")
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))

@@ -188,4 +188,14 @@ def update_user_info(uid, name, username):
     db.close()
     return True
 
-
+def get_user_username(uid):
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("SELECT username FROM users_info WHERE id=?", (str(uid),))
+    username = c.fetchone()
+    if username is not None:
+        db.close()
+        return username[0]
+    else:
+        db.close()
+        return False
