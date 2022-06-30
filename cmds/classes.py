@@ -75,6 +75,10 @@ class GetFile(StatesGroup):
 class AddNewUser(StatesGroup):
 	uid = State()
 
+
+class DelUser(StatesGroup):
+	uid = State()
+
 # class CompressPdf(StatesGroup):
 # 	folder = State()
 

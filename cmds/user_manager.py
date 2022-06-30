@@ -84,10 +84,10 @@ def add_user(stage, uid, name, username):
     return True
 
 
-def del_user(uid):
+def del_user(uid, stage):
     db = sqlite3.connect("storage/users.db")
     c = db.cursor()
-    c.execute(f"DELETE FROM users_info WHERE id=?", (uid,))
+    c.execute(f"DELETE FROM users_info WHERE id=? AND stage=?", (uid, stage))
     db.commit()
     db.close()
     return True

@@ -7,25 +7,26 @@ from cmds import user_manager, error_reporter
 from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
-from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, Del_File, AddNewExtraFile, Del_Extra_File, GetBook, GetFile, AddNewUser
+from cmds.classes import AddManager, DelManager, AddHW, DelHW, Anno, AnnoAll, Viewhw, MergePdf, MergeImages, AddNewFile, \
+    Del_File, AddNewExtraFile, Del_Extra_File, GetBook, GetFile, AddNewUser, DelUser
 from cmds.markup_manager import get_user_markup, custom_markup
 from cmds.user_manager import check_user_not_req, check_user_exist, update_user_info
-from commands_handlers.manager_menu_handler import Add_New_user, Add_New_user_command
+from commands_handlers.manager_menu_handler import Add_New_user, Add_New_user_command, Del_user, Del_user_command
 from commands_handlers.unkown_message_handler import unknow_messages
-from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler
+from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, \
+    view_hw_handler
 from cmds.books_manager import get_files_list, get_file_by_name, get_extra_file_by_name, get_extra_files_list
-
 
 # handle heroku dotenv not found and fails to get the token
 try:
     from dotenv import load_dotenv
+
     # load .env file
     load_dotenv()
     # import bot token from .env file
     bot_token = os.getenv('BOT_TOKEN')
 except:
     bot_token = os.environ.get('BOT_TOKEN')
-
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -36,9 +37,9 @@ storage = MemoryStorage()
 bot = Bot(token=bot_token)
 dp = Dispatcher(bot, storage=storage)
 
-
 # create s exams menu
-s_markup = custom_markup(["جدول المرحلة الاولى", "جدول المرحلة الثانية", "جدول المرحلة الثالثة", "جدول المرحلة الرابعة", "الرجوع للقائمة الرئيسية 🏠"])
+s_markup = custom_markup(["جدول المرحلة الاولى", "جدول المرحلة الثانية", "جدول المرحلة الثالثة", "جدول المرحلة الرابعة",
+                          "الرجوع للقائمة الرئيسية 🏠"])
 
 
 # create add admin handler
@@ -60,16 +61,18 @@ async def add_admin(message: types.Message, state: FSMContext):
     else:
         await message.answer("ليس لديك الصلاحيات ﻷجراء هذا الامر")
 
+
 @dp.message_handler(lambda message: not check_user_exist(message.from_user.id))
 async def Not_inside_sys(message: types.Message):
-    await message.answer(f"أنت غير مسجل اطلب من ممثل المرحلة أضافتك\n الID الخاص بك {message.from_user.id}")
+    await message.answer(f"أنت غير مسجل اطلب من ممثل المرحلة أضافتك\n الID الخاص بك {message.from_user.id}", reply_markup=types.ReplyKeyboardRemove())
+
 
 # check user not req
 @dp.message_handler(lambda message: check_user_not_req(message.from_user.id) == True)
 async def Get_user_info(message: types.Message):
     try:
         update_user_info(message.from_user.id, message.from_user.full_name, message.from_user.username)
-        await message.answer("أهلا بك", reply_markup=get_user_markup(message.from_user.id))
+        await message.answer("أهلا بك في البوت", reply_markup=get_user_markup(message.from_user.id))
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - check user not req", e)
@@ -89,7 +92,8 @@ async def start_message(message: types.Message):
 @dp.message_handler(lambda message: message.text == "أغلاق ❌")
 async def cancel_message(message: types.Message):
     try:
-        await message.answer("تم أغلاق القائمة\nلعرض القائمة من جديد ارسل بدء أو اضغط على /start", reply_markup=types.ReplyKeyboardRemove())
+        await message.answer("تم أغلاق القائمة\nلعرض القائمة من جديد ارسل بدء أو اضغط على /start",
+                             reply_markup=types.ReplyKeyboardRemove())
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - exit message handler", e)
@@ -116,11 +120,12 @@ async def view_books(message: types.Message):
 
 
 # create delete book canceler
-@dp.message_handler(lambda message: message.text == "الغاء الحذف" ,state=Del_File)
+@dp.message_handler(lambda message: message.text == "الغاء الحذف", state=Del_File)
 async def cancel_del_book(message: types.Message, state: FSMContext):
     try:
         if not user_manager.get_manager_stage(message.from_user.id):
-            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء",
+                                 reply_markup=get_user_markup(message.from_user.id))
         else:
             await state.finish()
             await message.answer("تم الالغاء بنجاح", reply_markup=get_user_markup(message.from_user.id))
@@ -147,7 +152,7 @@ async def del_book_command_handler(message: types.Message, state: FSMContext):
 
 
 # create delete extra file canceler
-@dp.message_handler(lambda message: message.text == "الغاء حذف الملف" ,state=Del_Extra_File)
+@dp.message_handler(lambda message: message.text == "الغاء حذف الملف", state=Del_Extra_File)
 async def cancel_del_book(message: types.Message, state: FSMContext):
     if not user_manager.get_manager_stage(message.from_user.id):
         await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
@@ -169,11 +174,13 @@ async def del_book_command_handler(message: types.Message, state: FSMContext):
 
 
 # create upload book handler
-@dp.message_handler(lambda message: message.text in get_files_list(user_manager.check_user_stage(message.from_user.id)), state=GetBook.temp)
+@dp.message_handler(lambda message: message.text in get_files_list(user_manager.check_user_stage(message.from_user.id)),
+                    state=GetBook.temp)
 async def upload_book(message: types.Message, state: FSMContext):
     try:
         await message.answer("جاري رفع الكتاب", reply_markup=get_user_markup(message.from_user.id))
-        await bot.send_document(message.chat.id, document=open(get_file_by_name(user_manager.check_user_stage(message.from_user.id), message.text), 'rb'))
+        await bot.send_document(message.chat.id, document=open(
+            get_file_by_name(user_manager.check_user_stage(message.from_user.id), message.text), 'rb'))
         await state.finish()
     except Exception as e:
         await state.finish()
@@ -182,11 +189,14 @@ async def upload_book(message: types.Message, state: FSMContext):
 
 
 # create upload extra handler
-@dp.message_handler(lambda message: message.text in get_extra_files_list(user_manager.check_user_stage(message.from_user.id)), state=GetFile.temp)
+@dp.message_handler(
+    lambda message: message.text in get_extra_files_list(user_manager.check_user_stage(message.from_user.id)),
+    state=GetFile.temp)
 async def upload_book(message: types.Message, state: FSMContext):
     try:
         await message.answer("جاري رفع الملف", reply_markup=get_user_markup(message.from_user.id))
-        await bot.send_document(message.chat.id, document=open(get_extra_file_by_name(user_manager.check_user_stage(message.from_user.id), message.text), 'rb'))
+        await bot.send_document(message.chat.id, document=open(
+            get_extra_file_by_name(user_manager.check_user_stage(message.from_user.id), message.text), 'rb'))
         await state.finish()
     except Exception as e:
         await state.finish()
@@ -323,7 +333,7 @@ async def Add_file_download(message: types.Message, state: FSMContext):
         await error_reporter.report(message, bot, "main - download extra file", e)
 
 
-#create my info message
+# create my info message
 @dp.message_handler(lambda message: message.text == "معلوماتي ❓")
 async def my_info_message(message: types.Message):
     try:
@@ -338,7 +348,8 @@ async def my_info_message(message: types.Message):
 async def back_to_main_menu(message: types.Message):
     try:
         if not user_manager.check_user_exist(message.from_user.id):
-            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا",
+                                   reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
     except Exception as e:
@@ -351,7 +362,8 @@ async def back_to_main_menu(message: types.Message):
 async def back_to_main_menu(message: types.Message):
     try:
         if not user_manager.check_user_exist(message.from_user.id):
-            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا",
+                                   reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
     except Exception as e:
@@ -364,7 +376,8 @@ async def back_to_main_menu(message: types.Message):
 async def back_to_main_menu(message: types.Message, state: FSMContext):
     try:
         if not user_manager.check_user_exist(message.from_user.id):
-            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا",
+                                   reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
             await state.finish()
@@ -379,7 +392,8 @@ async def back_to_main_menu(message: types.Message, state: FSMContext):
 async def back_to_main_menu(message: types.Message, state: FSMContext):
     try:
         if not user_manager.check_user_exist(message.from_user.id):
-            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا",
+                                   reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
             await state.finish()
@@ -404,7 +418,8 @@ async def view_hw(message: types.Message):
 async def user_managment(message: types.Message):
     try:
         if not user_manager.check_admin(message.from_user.id):
-            await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+            await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء",
+                                   reply_markup=get_user_markup(message.from_user.id))
         else:
             m = message.get_full_command()
             if user_manager.del_user(m[1]):
@@ -546,12 +561,15 @@ async def process_message(message: types.Message, state: FSMContext):
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
-        await error_reporter.report(message, bot, "main - get the message from the manager and send it to the student", e)
+        await error_reporter.report(message, bot, "main - get the message from the manager and send it to the student",
+                                    e)
+
 
 @dp.message_handler(text=("الغاء أضافة الطالب"), state=AddNewUser)
 async def cancel_add_user(message: types.Message, state: FSMContext):
     await state.finish()
     await message.answer("تم الغاء الادخال", reply_markup=get_user_markup(message.from_user.id))
+
 
 # create add student handler
 @dp.message_handler(text="أضافة طالب")
@@ -561,6 +579,7 @@ async def Add_user_handler(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - add student handler", e)
+
 
 # get user id and add it
 @dp.message_handler(state=AddNewUser.uid)
@@ -573,6 +592,34 @@ async def Add_User_command_handler(message: types.Message, state: FSMContext):
         await error_reporter.report(message, bot, "main - get user id and add it", e)
 
 
+# create delete student cancler
+@dp.message_handler(text=("الغاء حذف الطالب"), state=DelUser)
+async def cancel_add_user(message: types.Message, state: FSMContext):
+    await state.finish()
+    await message.answer("تم الغاء الحذف", reply_markup=get_user_markup(message.from_user.id))
+
+
+# create delete student handler
+@dp.message_handler(text="حذف طالب")
+async def Add_user_handler(message: types.Message):
+    try:
+        await Del_user(message, bot)
+    except Exception as e:
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "main - delete student handler", e)
+
+
+# get user id and delete it
+@dp.message_handler(state=DelUser.uid)
+async def Add_User_command_handler(message: types.Message, state: FSMContext):
+    try:
+        await Del_user_command(message, state, bot)
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "main - get user id and delete it", e)
+
+
 # create add manager command handler
 @dp.message_handler(lambda message: message.text == 'اضافة مشرف 💂')
 async def user_managment(message: types.Message):
@@ -580,7 +627,7 @@ async def user_managment(message: types.Message):
         await admin_menu_handler.Add_manager(message, bot)
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
-        await error_reporter.report(message, bot, "main - add manager command handler",e)
+        await error_reporter.report(message, bot, "main - add manager command handler", e)
 
 
 # get the stage from the user
@@ -607,7 +654,7 @@ async def process_age(message: types.Message, state: FSMContext):
 
 # create delete manager command handler
 @dp.message_handler(lambda message: message.text == 'حذف مشرف 💂')
-async def user_managment(message: types.Message):
+async def user_management(message: types.Message):
     try:
         await admin_menu_handler.Delete_manager(message, bot)
     except Exception as e:
@@ -655,7 +702,8 @@ async def process_message(message: types.Message, state: FSMContext):
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
-        await error_reporter.report(message, bot, "main - get the message from the manager and send it to the student", e)
+        await error_reporter.report(message, bot, "main - get the message from the manager and send it to the student",
+                                    e)
 
 
 # create list of user id and username for all users
@@ -665,7 +713,7 @@ async def make_list(message: types.Message):
         await admin_menu_handler.View_all_users(message, bot)
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
-        await error_reporter.report(message, bot, "main - list of user id and username for all users ",e)
+        await error_reporter.report(message, bot, "main - list of user id and username for all users ", e)
 
 
 # create admin permissions list getter
@@ -737,7 +785,7 @@ async def pdf_getter(message: types.Message, state: FSMContext):
 
 
 # create merge pdf command handler
-@dp.message_handler(lambda message: message.text == "دمج" ,state=MergePdf.temp)
+@dp.message_handler(lambda message: message.text == "دمج", state=MergePdf.temp)
 async def merge_handler(message: types.Message, state: FSMContext):
     try:
         await tools_handler.MergePdf_merge(message, state, bot)
@@ -785,7 +833,7 @@ async def merge(message: types.Message, state: FSMContext):
 
 
 # create merge images command handler
-@dp.message_handler(lambda message: message.text == "دمج" ,state=MergeImages.temp)
+@dp.message_handler(lambda message: message.text == "دمج", state=MergeImages.temp)
 async def merge(message: types.Message, state: FSMContext):
     try:
         await tools_handler.Imgs2Pdf_merge_handler(message, state, bot)
@@ -814,6 +862,7 @@ async def unknow(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - unkown message handler", e)
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
