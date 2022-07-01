@@ -62,17 +62,18 @@ async def Delete_manager_get_stage(message, state):
     try:
         if message.text not in ["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة","الغاء الادخال"]:
             await message.answer("أختر المرحلة أولا")
-        stage_translate = {
-            "مرحلة اولى": "stage1",
-            "مرحلة ثانية": "stage2",
-            "مرحلة ثالثة": "stage3",
-            "مرحلة رابعة": "stage4"
-        }
-        async with state.proxy() as data:
-            data['stage'] = stage_translate[message.text]
+        else:
+            stage_translate = {
+                "مرحلة اولى": "stage1",
+                "مرحلة ثانية": "stage2",
+                "مرحلة ثالثة": "stage3",
+                "مرحلة رابعة": "stage4"
+            }
+            async with state.proxy() as data:
+                data['stage'] = stage_translate[message.text]
 
-        await DelManager.next()
-        await message.reply("ارسل الID الخاص بالمستخدم", reply_markup=custom_markup(["الغاء الادخال"]))
+            await DelManager.next()
+            await message.reply("ارسل الID الخاص بالمستخدم", reply_markup=custom_markup(["الغاء الادخال"]))
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
