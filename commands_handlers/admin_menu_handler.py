@@ -60,6 +60,8 @@ async def Delete_manager(message):
 
 async def Delete_manager_get_stage(message, state):
     try:
+        if message.text not in ["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة","الغاء الادخال"]:
+            await message.answer("أختر المرحلة أولا")
         stage_translate = {
             "مرحلة اولى": "stage1",
             "مرحلة ثانية": "stage2",
@@ -114,17 +116,20 @@ async def Add_manager(message):
 
 async def Add_manager_get_stage(message, state):
     try:
-        stage_translate = {
-            "مرحلة اولى": "stage1",
-            "مرحلة ثانية": "stage2",
-            "مرحلة ثالثة": "stage3",
-            "مرحلة رابعة": "stage4"
-        }
-        async with state.proxy() as data:
-            data['stage'] = stage_translate[message.text]
+        if message.text not in ["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة","الغاء الادخال"]:
+            await message.answer("أختر المرحلة أولا")
+        else:
+            stage_translate = {
+                "مرحلة اولى": "stage1",
+                "مرحلة ثانية": "stage2",
+                "مرحلة ثالثة": "stage3",
+                "مرحلة رابعة": "stage4"
+            }
+            async with state.proxy() as data:
+                data['stage'] = stage_translate[message.text]
 
-        await AddManager.next()
-        await message.reply("ارسل الID الخاص بالمستخدم", reply_markup=custom_markup(["الغاء الادخال"]))
+            await AddManager.next()
+            await message.reply("ارسل الID الخاص بالمستخدم", reply_markup=custom_markup(["الغاء الادخال"]))
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))

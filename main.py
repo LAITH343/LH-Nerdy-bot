@@ -4,7 +4,8 @@ from cmds import user_manager, error_reporter
 from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from cmds.markup_manager import get_user_markup
-from cmds.user_manager import check_user_not_req, check_user_exist, update_user_info
+from cmds.user_manager import check_user_not_req, check_user_exist, update_user_info, check_username_changed, \
+    get_user_username
 from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler, unkown_message_handler, upload_files_handler
 from config import bot, bot_owner
 
@@ -52,6 +53,12 @@ async def Get_user_info(message: types.Message):
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - check user not req", e)
+
+
+# check user username if it was changed
+@dp.message_handler(lambda message: check_username_changed(message.from_user.id, message.from_user.username) == True)
+async def username_changed(message: types.Message):
+    await message.answer(f"لقد قمت بتغيير أسم المستخدم (اليوزر) الخاص بك\n يرجى الرجوع الى {get_user_username(message.from_user.id)} أو أطلب من ممثل المرحلة حذفك و أضافتك من جديد")
 
 
 # create start message/command handler

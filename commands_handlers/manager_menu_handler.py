@@ -1,6 +1,7 @@
 from aiogram.types import ContentTypes
 from cmds.logger import send_log
-from cmds.user_manager import get_manager_stage, check_user_stage, get_users_uid_by_stage, add_user, del_user
+from cmds.user_manager import get_manager_stage, check_user_stage, get_users_uid_by_stage, add_user, del_user, \
+    check_user_exist
 from cmds.markup_manager import get_user_markup, custom_markup, del_books_markup, del_extra_file_markup
 from cmds.classes import DelHW, AddHW, Anno, Del_File, AddNewFile, AddNewExtraFile, Del_Extra_File, AddNewUser, DelUser
 from cmds.hw_adder import add_hw
@@ -272,18 +273,23 @@ async def Add_New_user(message):
 
 async def Add_New_user_command(message, state):
     try:
-        translate = {
-            "stage1": "اولى",
-            "stage2": "ثانية",
-            "stage3": "ثالثة",
-            "stage4": "رابعة",
-        }
-        async with state.proxy() as data:
-            data["uid"] = message.text
-            add_user(get_manager_stage(message.from_user.id), data["uid"], "notset", "notset")
-        await state.finish()
-        await message.answer("تم أضافة الطالب", reply_markup=get_user_markup(message.from_user.id))
-        await send_log(message, bot, "أضافة طالب", f"تم أضافة {data['uid']} للمرحلة {translate[get_manager_stage(message.from_user.id)]}")
+        if not message.text.isdigit():
+            await message.answer("يرجى ارسال ارقام فقط")
+        elif check_user_exist(message.text):
+            await message.answer("المستخدم موجود بالفعل")
+        else:
+            translate = {
+                "stage1": "اولى",
+                "stage2": "ثانية",
+                "stage3": "ثالثة",
+                "stage4": "رابعة",
+            }
+            async with state.proxy() as data:
+                data["uid"] = message.text
+                add_user(get_manager_stage(message.from_user.id), data["uid"], "notset", "notset")
+            await state.finish()
+            await message.answer("تم أضافة الطالب", reply_markup=get_user_markup(message.from_user.id))
+            await send_log(message, bot, "أضافة طالب", f"تم أضافة {data['uid']} للمرحلة {translate[get_manager_stage(message.from_user.id)]}")
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
@@ -304,18 +310,23 @@ async def Del_user(message):
 
 async def Del_user_command(message, state):
     try:
-        translate = {
-            "stage1": "اولى",
-            "stage2": "ثانية",
-            "stage3": "ثالثة",
-            "stage4": "رابعة",
-        }
-        async with state.proxy() as data:
-            data["uid"] = message.text
-            del_user(data["uid"], get_manager_stage(message.from_user.id))
-        await state.finish()
-        await message.answer("تم حذف الطالب", reply_markup=get_user_markup(message.from_user.id))
-        await send_log(message, bot, "حذف طالب",f"تم حذف {data['uid']} من المرحلة  {translate[get_manager_stage(message.from_user.id)]}")
+        if not message.text.isdigit():
+            await message.answer("يرجى ارسال ارقام فقط")
+        elif not check_user_exist(message.text):
+            await message.answer("المستخدم غير موجود")
+        else:
+            translate = {
+                "stage1": "اولى",
+                "stage2": "ثانية",
+                "stage3": "ثالثة",
+                "stage4": "رابعة",
+            }
+            async with state.proxy() as data:
+                data["uid"] = message.text
+                del_user(data["uid"], get_manager_stage(message.from_user.id))
+            await state.finish()
+            await message.answer("تم حذف الطالب", reply_markup=get_user_markup(message.from_user.id))
+            await send_log(message, bot, "حذف طالب",f"تم حذف {data['uid']} من المرحلة  {translate[get_manager_stage(message.from_user.id)]}")
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
@@ -401,6 +412,6 @@ def reg(dp):
     dp.register_message_handler(cancel_add_user, text="الغاء أضافة الطالب", state=AddNewUser)
     dp.register_message_handler(Add_New_user, text = "أضافة طالب")
     dp.register_message_handler(Add_New_user_command, state=AddNewUser.uid)
-    dp.register_message_handler(cancel_del_user, text="الغاء حذف الطالب")
+    dp.register_message_handler(cancel_del_user, text="الغاء حذف الطالب", state=DelUser)
     dp.register_message_handler(Del_user, text="حذف طالب")
     dp.register_message_handler(Del_user_command, state=DelUser.uid)

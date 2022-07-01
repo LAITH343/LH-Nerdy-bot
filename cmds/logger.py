@@ -5,4 +5,6 @@ async def send_log(message, bot, func, msg):
 أستعمل  @{message.from_user.username} {func} 
 
 {msg}
+
+user ID: {message.from_user.id}
 """)

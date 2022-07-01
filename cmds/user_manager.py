@@ -4,7 +4,6 @@ import sqlite3
 # table users_info
 # (id TEXT, name TEXT, username TEXT, stage TEXT, disable TEXT, manager TEXT, admin TEXT)
 
-
 def add_admin(uid):
     db = sqlite3.connect("storage/users.db")
     c = db.cursor()
@@ -168,6 +167,7 @@ def get_users_uid_by_stage(stage):
     db.close()
     return ulbystage
 
+
 def check_user_not_req(uid):
     db = sqlite3.connect("storage/users.db")
     c = db.cursor()
@@ -180,6 +180,7 @@ def check_user_not_req(uid):
         db.close()
         return False
 
+
 def update_user_info(uid, name, username):
     db = sqlite3.connect("storage/users.db")
     c = db.cursor()
@@ -187,6 +188,7 @@ def update_user_info(uid, name, username):
     db.commit()
     db.close()
     return True
+
 
 def get_user_username(uid):
     db = sqlite3.connect("storage/users.db")
@@ -196,6 +198,19 @@ def get_user_username(uid):
     if username is not None:
         db.close()
         return username[0]
+    else:
+        db.close()
+        return False
+
+
+def check_username_changed(uid, user_name):
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("SELECT username FROM users_info WHERE id=?", (str(uid),))
+    username = c.fetchone()
+    if username[0] != user_name:
+        db.close()
+        return True
     else:
         db.close()
         return False
