@@ -206,11 +206,15 @@ def get_user_username(uid):
 def check_username_changed(uid, user_name):
     db = sqlite3.connect("storage/users.db")
     c = db.cursor()
-    c.execute("SELECT username FROM users_info WHERE id=?", (str(uid),))
+    c.execute("SELECT username FROM users_info WHERE id=? AND (manager='True' OR admin='True')", (str(uid),))
     username = c.fetchone()
-    if username[0] != user_name:
-        db.close()
-        return True
+    if username is not None:
+        if username[0] != user_name:
+            db.close()
+            return True
+        else:
+            db.close()
+            return False
     else:
         db.close()
         return False

@@ -23,7 +23,7 @@ dp = Dispatcher(bot, storage=storage)
 async def add_admin(message: types.Message, state: FSMContext):
     if message.from_user.id == int(bot_owner):
         user_manager.add_admin(message.get_full_command()[1])
-        await message.answer("تم الاضافة", reply_markup=get_user_markup(message.from_user.id))
+        await message.answer("تم الاضافة")
     else:
         await message.answer("ليس لديك الصلاحيات ﻷجراء هذا الامر")
 
@@ -33,7 +33,7 @@ async def add_admin(message: types.Message, state: FSMContext):
 async def add_admin(message: types.Message, state: FSMContext):
     if message.from_user.id == int(bot_owner):
         user_manager.del_admin(message.get_full_command()[1])
-        await message.answer("تم الحذف", reply_markup=get_user_markup(message.from_user.id))
+        await message.answer("تم الحذف")
     else:
         await message.answer("ليس لديك الصلاحيات ﻷجراء هذا الامر")
 
@@ -58,7 +58,7 @@ async def Get_user_info(message: types.Message):
 # check user username if it was changed
 @dp.message_handler(lambda message: check_username_changed(message.from_user.id, message.from_user.username) == True)
 async def username_changed(message: types.Message):
-    await message.answer(f"لقد قمت بتغيير أسم المستخدم (اليوزر) الخاص بك\n يرجى الرجوع الى {get_user_username(message.from_user.id)} أو أطلب من ممثل المرحلة حذفك و أضافتك من جديد")
+    await message.answer(f"لقد قمت بتغيير أسم المستخدم (اليوزر) الخاص بك\n يرجى الرجوع الى {get_user_username(message.from_user.id)} أو أطلب من المسؤول حذفك و أضافتك من جديد", reply_markup=types.ReplyKeyboardRemove())
 
 
 # create start message/command handler
