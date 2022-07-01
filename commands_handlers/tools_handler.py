@@ -1,14 +1,18 @@
 import random
 import string
 import os
+
+from aiogram.types import ContentTypes
+
 from cmds.user_manager import check_user_exist
 from cmds.markup_manager import get_user_markup, custom_markup
 from cmds.classes import MergeImages, MergePdf
 from cmds.pdf_manager import images_to_pdf, merge_pdfs
 from cmds import error_reporter
+from config import bot
 
 
-async def Imgs2Pdf_file_name(message, state, bot):
+async def Imgs2Pdf_file_name(message, state):
     if not check_user_exist(message.from_user.id):
         await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
     else:
@@ -28,7 +32,7 @@ async def Imgs2Pdf_file_name(message, state, bot):
             await error_reporter.report(message, bot, "Imgs2Pdf_file_name", e)
 
 
-async def Imgs2Pdf_get_images(message, state, bot):
+async def Imgs2Pdf_get_images(message, state):
     if not check_user_exist(message.from_user.id):
         await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
     else:
@@ -46,7 +50,7 @@ async def Imgs2Pdf_get_images(message, state, bot):
             await error_reporter.report(message, bot, "Imgs2Pdf_get_images", e)
 
 
-async def Imgs2Pdf_cancel_handler(message, state, bot):
+async def Imgs2Pdf_cancel_handler(message, state):
     try:
         async with state.proxy() as data:
             os.system(f"rm -rf {data['folder']}")
@@ -60,7 +64,7 @@ async def Imgs2Pdf_cancel_handler(message, state, bot):
         await error_reporter.report(message, bot, "Imgs2Pdf_cancel_handler", e)
 
 
-async def Imgs2Pdf_Imgs_downloader(message, state, bot):
+async def Imgs2Pdf_Imgs_downloader(message, state):
     try:
         async with state.proxy() as data:
             if document := message.document:
@@ -84,7 +88,7 @@ async def Imgs2Pdf_Imgs_downloader(message, state, bot):
         await error_reporter.report(message, bot, "Imgs2Pdf_Imgs_downloader", e)
 
 
-async def Imgs2Pdf_merge_handler(message, state, bot):
+async def Imgs2Pdf_merge_handler(message, state):
     try:
         async with state.proxy() as data:
             f = open((data['folder'] + "/files"), 'r')
@@ -103,7 +107,7 @@ async def Imgs2Pdf_merge_handler(message, state, bot):
         await error_reporter.report(message, bot, "Imgs2Pdf_merge_handler", e)
 
 
-async def MergePdf_ask_file_name(message, state, bot):
+async def MergePdf_ask_file_name(message, state):
     try:
         if not check_user_exist(message.from_user.id):
             await message.reply("اختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
@@ -121,7 +125,7 @@ async def MergePdf_ask_file_name(message, state, bot):
         await error_reporter.report(message, bot, "MergePdf_ask_file_name", e)
 
 
-async def MergePdf_get_file_name(message, state, bot):
+async def MergePdf_get_file_name(message, state):
     try:
         async with state.proxy() as data:
             data['file_name'] = message.text
@@ -134,7 +138,7 @@ async def MergePdf_get_file_name(message, state, bot):
         await error_reporter.report(message, bot, "MergePdf_get_file_name", e)
 
 
-async def MergePdf_cancel_handler(message, state, bot):
+async def MergePdf_cancel_handler(message, state):
     try:
         async with state.proxy() as data:
             os.system(f"rm -rf {data['folder']}")
@@ -149,7 +153,7 @@ async def MergePdf_cancel_handler(message, state, bot):
 
 
 
-async def MergePdf_get_files(message, state, bot):
+async def MergePdf_get_files(message, state):
     try:
         async with state.proxy() as data:
             if document := message.document:
@@ -168,7 +172,7 @@ async def MergePdf_get_files(message, state, bot):
         await error_reporter.report(message, bot, "MergePdf_get_files", e)
 
 
-async def MergePdf_merge(message, state, bot):
+async def MergePdf_merge(message, state):
     try:
         async with state.proxy() as data:
             f = open((data['folder'] + "/files"), 'r')
@@ -184,3 +188,16 @@ async def MergePdf_merge(message, state, bot):
         await state.finish()
         await message.answer("فشل دمج الملفات", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "MergePdf_merge", e)
+
+
+def reg(dp):
+    dp.register_message_handler(Imgs2Pdf_cancel_handler, text="الغاء الدمج", state=MergeImages)
+    dp.register_message_handler(MergePdf_cancel_handler, text="الغاء الدمج", state=MergePdf)
+    dp.register_message_handler(MergePdf_ask_file_name, text="دمج ملفات pdf")
+    dp.register_message_handler(Imgs2Pdf_file_name, text="تحويل الصور الى pdf")
+    dp.register_message_handler(Imgs2Pdf_merge_handler, text="دمج", state=MergeImages.temp)
+    dp.register_message_handler(MergePdf_merge, text="دمج", state=MergePdf.temp)
+    dp.register_message_handler(Imgs2Pdf_get_images, state=MergeImages.file_name, content_types=ContentTypes.ANY)
+    dp.register_message_handler(Imgs2Pdf_Imgs_downloader, state=MergeImages.temp, content_types=ContentTypes.ANY)
+    dp.register_message_handler(MergePdf_get_file_name, state=MergePdf.file_name, content_types=ContentTypes.ANY)
+    dp.register_message_handler(MergePdf_get_files, state=MergePdf.temp, content_types=ContentTypes.DOCUMENT)

@@ -1,13 +1,15 @@
+from aiogram.types import ContentTypes
 from cmds.logger import send_log
 from cmds.user_manager import get_manager_stage, check_user_stage, get_users_uid_by_stage, add_user, del_user
 from cmds.markup_manager import get_user_markup, custom_markup, del_books_markup, del_extra_file_markup
 from cmds.classes import DelHW, AddHW, Anno, Del_File, AddNewFile, AddNewExtraFile, Del_Extra_File, AddNewUser, DelUser
 from cmds.hw_adder import add_hw
 from cmds.books_manager import add_file, del_file, get_files_list, del_extra_file, add_extra_file, get_extra_files_list
-from cmds import error_reporter
+from cmds import error_reporter, user_manager
+from config import bot
 
 
-async def Manager_del_hw(message, bot):
+async def Manager_del_hw(message):
     try:
         if not get_manager_stage(message.from_user.id):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
@@ -19,7 +21,7 @@ async def Manager_del_hw(message, bot):
         await error_reporter.report(message, bot, "Manager_del_hw", e)
 
 
-async def Manager_del_hw_command(message, state, bot):
+async def Manager_del_hw_command(message, state):
     try:
         async with state.proxy() as data:
             data['day'] = message.text
@@ -34,7 +36,7 @@ async def Manager_del_hw_command(message, state, bot):
         await error_reporter.report(message, bot, "Manager_del_hw_command", e)
 
 
-async def Manager_add_hw(message, bot):
+async def Manager_add_hw(message):
     try:
         if not get_manager_stage(message.from_user.id):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
@@ -46,7 +48,7 @@ async def Manager_add_hw(message, bot):
         await error_reporter.report(message, bot, "Manager_add_hw", e)
 
 
-async def Manager_get_day(message, state, bot):
+async def Manager_get_day(message, state):
     try:
         async with state.proxy() as data:
             data['day'] = message.text
@@ -58,7 +60,7 @@ async def Manager_get_day(message, state, bot):
         await error_reporter.report(message, bot, "Manager_get_day", e)
 
 
-async def Manager_add_hw_command(message, state, bot):
+async def Manager_add_hw_command(message, state):
     try:
         async with state.proxy() as data:
             data['hw'] = message.text
@@ -72,7 +74,7 @@ async def Manager_add_hw_command(message, state, bot):
         await error_reporter.report(message, bot, "Manager_add_hw_command", e)
 
 
-async def Manager_send_anno(message, bot):
+async def Manager_send_anno(message):
     try:
         if not get_manager_stage(message.from_user.id):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
@@ -84,7 +86,7 @@ async def Manager_send_anno(message, bot):
         await error_reporter.report(message, bot, "Manager_send_anno", e)
 
 
-async def Manager_send_anno_command(message, state, bot):
+async def Manager_send_anno_command(message, state):
     try:
         async with state.proxy() as data:
             data['m'] = f"أعلان  📢 بواسطة: @{message.from_user.username}\n\n"
@@ -100,7 +102,7 @@ async def Manager_send_anno_command(message, state, bot):
         await error_reporter.report(message, bot, "Manager_send_anno_command", e)
 
 
-async def Add_book(message, bot):
+async def Add_book(message):
     try:
         if not get_manager_stage(message.from_user.id):
             await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
@@ -112,7 +114,7 @@ async def Add_book(message, bot):
         await error_reporter.report(message, bot, "Add_book", e)
 
 
-async def Add_book_get_file_name(message, state, bot):
+async def Add_book_get_file_name(message, state):
     try:
         if not message.text:
             await message.answer("ارسل اسم الملف اولا")
@@ -128,7 +130,7 @@ async def Add_book_get_file_name(message, state, bot):
         await error_reporter.report(message, bot, "Add_book_get_file_name", e)
 
 
-async def Add_book_command(message, state, bot):
+async def Add_book_command(message, state):
     try:
         if document := message.document:
             await message.answer("جاري تنزيل الملف")
@@ -148,7 +150,7 @@ async def Add_book_command(message, state, bot):
         await error_reporter.report(message, bot, "Add_book_command", e)
 
 
-async def del_book(message, bot):
+async def del_book(message):
     try:
         if not get_manager_stage(message.from_user.id):
             await message.answer("عذرا ليس لديك الصلاحيات لأجراء هذا الامر", reply_markup=get_user_markup(message.from_user.id))
@@ -160,7 +162,7 @@ async def del_book(message, bot):
         await error_reporter.report(message, bot, "del_book", e)
 
 
-async def del_book_command(message, state, bot):
+async def del_book_command(message, state):
     try:
         if not get_manager_stage(message.from_user.id):
             await message.answer("عذرا ليس لديك الصلاحيات لأجراء هذا الامر", reply_markup=get_user_markup(message.from_user.id))
@@ -178,7 +180,7 @@ async def del_book_command(message, state, bot):
         await error_reporter.report(message, bot, "del_book_command", e)
 
 
-async def Add_extra_file(message, bot):
+async def Add_extra_file(message):
     try:
         if not get_manager_stage(message.from_user.id):
             await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
@@ -190,7 +192,7 @@ async def Add_extra_file(message, bot):
         await error_reporter.report(message, bot, "Add_extra_file", e)
 
 
-async def Add_extra_file_get_file_name(message, state, bot):
+async def Add_extra_file_get_file_name(message, state):
     try:
         if not message.text:
             await message.answer("ارسل اسم الملف اولا")
@@ -206,7 +208,7 @@ async def Add_extra_file_get_file_name(message, state, bot):
         await error_reporter.report(message, bot, "Add_extra_file_get_file_name", e)
 
 
-async def Add_extra_file_command(message, state, bot):
+async def Add_extra_file_command(message, state):
     try:
         if document := message.document:
             await message.answer("جاري تنزيل الملف")
@@ -226,7 +228,7 @@ async def Add_extra_file_command(message, state, bot):
         await error_reporter.report(message, bot, "Add_extra_file_command", e)
 
 
-async def Del_extra_file(message, bot):
+async def Del_extra_file(message):
     try:
         if not get_manager_stage(message.from_user.id):
             await message.answer("عذرا ليس لديك الصلاحيات لأجراء هذا الامر", reply_markup=get_user_markup(message.from_user.id))
@@ -238,7 +240,7 @@ async def Del_extra_file(message, bot):
         await error_reporter.report(message, bot, "Del_extra_file", e)
 
 
-async def del_extra_file_command(message, state, bot):
+async def del_extra_file_command(message, state):
     try:
         if not get_manager_stage(message.from_user.id):
             await message.answer("عذرا ليس لديك الصلاحيات لأجراء هذا الامر", reply_markup=get_user_markup(message.from_user.id))
@@ -256,7 +258,7 @@ async def del_extra_file_command(message, state, bot):
         await error_reporter.report(message, bot, "del_extra_file_command", e)
 
 
-async def Add_New_user(message, bot):
+async def Add_New_user(message):
     try:
         if not get_manager_stage(message.from_user.id):
             await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
@@ -268,7 +270,7 @@ async def Add_New_user(message, bot):
         await error_reporter.report(message, bot, "Add_New_user", e)
 
 
-async def Add_New_user_command(message, state, bot):
+async def Add_New_user_command(message, state):
     try:
         translate = {
             "stage1": "اولى",
@@ -288,7 +290,7 @@ async def Add_New_user_command(message, state, bot):
         await error_reporter.report(message, bot, "Add_New_user_command", e)
 
 
-async def Del_user(message, bot):
+async def Del_user(message):
     try:
         if not get_manager_stage(message.from_user.id):
             await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
@@ -300,7 +302,7 @@ async def Del_user(message, bot):
         await error_reporter.report(message, bot, "Del_user", e)
 
 
-async def Del_user_command(message, state, bot):
+async def Del_user_command(message, state):
     try:
         translate = {
             "stage1": "اولى",
@@ -318,3 +320,87 @@ async def Del_user_command(message, state, bot):
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "Del_user_command", e)
+
+
+async def cancel_del_user(message, state):
+    await state.finish()
+    await message.answer("تم الغاء الحذف", reply_markup=get_user_markup(message.from_user.id))
+
+
+async def cancel_add_user(message, state):
+    await state.finish()
+    await message.answer("تم الغاء الادخال", reply_markup=get_user_markup(message.from_user.id))
+
+
+async def cancel_del_file(message, state):
+    if not user_manager.get_manager_stage(message.from_user.id):
+        await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+    else:
+        await state.finish()
+        await message.answer("تم الالغاء بنجاح", reply_markup=get_user_markup(message.from_user.id))
+
+
+async def cancel_del_book(message, state):
+    try:
+        if not user_manager.get_manager_stage(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء",
+                                 reply_markup=get_user_markup(message.from_user.id))
+        else:
+            await state.finish()
+            await message.answer("تم الالغاء بنجاح", reply_markup=get_user_markup(message.from_user.id))
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "main - delete book canceler", e)
+
+
+async def cancel_handler(message, state):
+    try:
+        # Cancel state
+        await state.finish()
+        await message.reply('تم الغاء الاضافة', reply_markup=get_user_markup(message.from_user.id))
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "main - add book cancler ", e)
+
+
+async def cancel_Book_handler(message, state):
+    try:
+        # Cancel state
+        await state.finish()
+        await message.reply('تم الغاء الاضافة', reply_markup=get_user_markup(message.from_user.id))
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "main - add book cancler ", e)
+
+
+def reg(dp):
+    dp.register_message_handler(cancel_Book_handler, text='الغاء الاضافة', state=AddNewFile)
+    dp.register_message_handler(cancel_handler, text='الغاء الاضافة', state=AddNewExtraFile)
+    dp.register_message_handler(Manager_del_hw, text="حذف واجب 📝")
+    dp.register_message_handler(Manager_del_hw_command, state=DelHW.day)
+    dp.register_message_handler(Manager_add_hw, text = "اضافة واجب 📝")
+    dp.register_message_handler(Manager_get_day, state=AddHW.day)
+    dp.register_message_handler(Manager_add_hw_command, state=AddHW.hw)
+    dp.register_message_handler(Manager_send_anno, text="أرسال اعلان 📢")
+    dp.register_message_handler(Manager_send_anno_command, state=Anno.m)
+    dp.register_message_handler(cancel_del_book, text="الغاء الحذف", state=Del_File)
+    dp.register_message_handler(Add_book, text="اضافة كتاب 📕")
+    dp.register_message_handler(Add_book_get_file_name, state=AddNewFile.file_name, content_types=ContentTypes.ANY)
+    dp.register_message_handler(Add_book_command, state=AddNewFile.file_path, content_types=ContentTypes.DOCUMENT)
+    dp.register_message_handler(cancel_del_file, text="الغاء حذف الملف", state=Del_Extra_File)
+    dp.register_message_handler(del_book, text = "حذف كتاب ❌")
+    dp.register_message_handler(del_book_command, state=Del_File.temp)
+    dp.register_message_handler(Add_extra_file, text = "اضافة ملف 📎")
+    dp.register_message_handler(Add_extra_file_get_file_name, state=AddNewExtraFile.file_name, content_types=ContentTypes.ANY)
+    dp.register_message_handler(Add_extra_file_command, state=AddNewExtraFile.file_path, content_types=ContentTypes.DOCUMENT)
+    dp.register_message_handler(Del_extra_file, text = "حذف ملف ❌")
+    dp.register_message_handler(del_extra_file_command, state=Del_Extra_File.temp)
+    dp.register_message_handler(cancel_add_user, text="الغاء أضافة الطالب", state=AddNewUser)
+    dp.register_message_handler(Add_New_user, text = "أضافة طالب")
+    dp.register_message_handler(Add_New_user_command, state=AddNewUser.uid)
+    dp.register_message_handler(cancel_del_user, text="الغاء حذف الطالب")
+    dp.register_message_handler(Del_user, text="حذف طالب")
+    dp.register_message_handler(Del_user_command, state=DelUser.uid)

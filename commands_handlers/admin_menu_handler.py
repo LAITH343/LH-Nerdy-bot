@@ -3,9 +3,10 @@ from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_m
 from cmds.markup_manager import get_user_markup, custom_markup
 from cmds.classes import AnnoAll, AddManager, DelManager
 from cmds import error_reporter
+from config import bot
 
 
-async def View_all_users(message, bot):
+async def View_all_users(message):
     try:
         if not check_admin(message.from_user.id):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
@@ -17,19 +18,19 @@ async def View_all_users(message, bot):
         await error_reporter.report(message, bot, "View_all_users", e)
 
 
-async def Send_anno_4all(message, bot):
+async def Send_anno_4all(message):
     try:
         if not check_admin(message.from_user.id):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
         else:
             await AnnoAll.m.set()
-            await message.reply("ارسل الرسالى التي تريد اعلانها", reply_markup=custom_markup(["الغاء الادخال"])) #cancel_input_markup
+            await message.reply("ارسل الرساله التي تريد اعلانها", reply_markup=custom_markup(["الغاء الادخال"])) #cancel_input_markup
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "Send_anno_4all", e)
 
 
-async def Get_anno_msg_and_send(message, state, bot):
+async def Get_anno_msg_and_send(message, state):
     try:
         async with state.proxy() as data:
             data['m'] = f"أعلان للجميع 📢 بواسطة: @{message.from_user.username}\n\n"
@@ -45,7 +46,7 @@ async def Get_anno_msg_and_send(message, state, bot):
         await error_reporter.report(message, bot, "Get_anno_msg_and_send", e)
 
 
-async def Delete_manager(message, bot):
+async def Delete_manager(message):
     try:
         if not check_admin(message.from_user.id):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
@@ -57,7 +58,7 @@ async def Delete_manager(message, bot):
         await error_reporter.report(message, bot, "Delete_manager", e)
 
 
-async def Delete_manager_get_stage(message, state, bot):
+async def Delete_manager_get_stage(message, state):
     try:
         stage_translate = {
             "مرحلة اولى": "stage1",
@@ -76,7 +77,7 @@ async def Delete_manager_get_stage(message, state, bot):
         await error_reporter.report(message, bot, "Delete_manager_get_stage", e)
 
 
-async def Delete_manager_get_uid_and_del(message, state, bot):
+async def Delete_manager_get_uid_and_del(message, state):
     try:
         if not message.text.isdigit():
             await message.answer("يرجى ارسال ارقام فقط")
@@ -99,7 +100,7 @@ async def Delete_manager_get_uid_and_del(message, state, bot):
         await error_reporter.report(message, bot, "Delete_manager_get_uid_and_del", e)
 
 
-async def Add_manager(message, bot):
+async def Add_manager(message):
     try:
         if not check_admin(message.from_user.id):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
@@ -111,7 +112,7 @@ async def Add_manager(message, bot):
         await error_reporter.report(message, bot, "Add_manager", e)
 
 
-async def Add_manager_get_stage(message, state, bot):
+async def Add_manager_get_stage(message, state):
     try:
         stage_translate = {
             "مرحلة اولى": "stage1",
@@ -130,7 +131,7 @@ async def Add_manager_get_stage(message, state, bot):
         await error_reporter.report(message, bot, "Add_manager_get_stage", e)
 
 
-async def Add_manager_get_uid_and_add(message, state, bot):
+async def Add_manager_get_uid_and_add(message, state):
     try:
         if not message.text.isdigit():
             await message.answer("يرجى ارسال ارقام فقط")
@@ -151,3 +152,16 @@ async def Add_manager_get_uid_and_add(message, state, bot):
         await state.finish()
         await message.answer("فشل اضافة المشرف", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "Add_manager_get_uid_and_add", e)
+
+
+def reg(dp):
+    dp.register_message_handler(View_all_users, text="عرض جميع المستخدمين 📋")
+    dp.register_message_handler(Send_anno_4all, text='أرسال اعلان للجميع 📢')
+    dp.register_message_handler(Get_anno_msg_and_send, state=AnnoAll.m)
+    dp.register_message_handler(Delete_manager, text ="حذف مشرف 💂")
+    dp.register_message_handler(Delete_manager_get_stage, state=DelManager.stage)
+    dp.register_message_handler(Delete_manager_get_uid_and_del, state=DelManager.uid)
+    dp.register_message_handler(Add_manager, text = "اضافة مشرف 💂")
+    dp.register_message_handler(Add_manager_get_stage, state=AddManager.stage)
+    dp.register_message_handler(Add_manager_get_uid_and_add, state=AddManager.uid)
+

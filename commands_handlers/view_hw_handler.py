@@ -3,9 +3,10 @@ from cmds.markup_manager import get_user_markup, custom_markup
 from cmds.hw_getter import get_hw, get_hw_allweek
 from cmds import user_manager
 from cmds import error_reporter
+from config import bot
 
 
-async def View_hw_select_day(message, bot):
+async def View_hw_select_day(message):
 	try:
 		if not user_manager.check_user_exist(message.from_user.id):
 			await message.reply("يجب اختيار المرحلة اولا!", reply_markup=get_user_markup(message.from_user.id))
@@ -17,7 +18,7 @@ async def View_hw_select_day(message, bot):
 		await error_reporter.report(message, bot, "View_hw_select_day", e)
 
 
-async def View_hw_command(message, state, bot):
+async def View_hw_command(message, state):
 	try:
 		async with state.proxy() as data:
 			data['day'] = message.text
@@ -32,7 +33,7 @@ async def View_hw_command(message, state, bot):
 		await error_reporter.report(message, bot, "View_hw_command", e)
 
 
-async def View_hw_all_command(message, bot):
+async def View_hw_all_command(message):
 	try:
 		if not user_manager.check_user_exist(message.from_user.id):
 			await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=new_user_main_markup)
@@ -45,3 +46,9 @@ async def View_hw_all_command(message, bot):
 	except Exception as e:
 		await message.answer("فشل عرض الواجب!", reply_markup=get_user_markup(message.from_user.id))
 		await error_reporter.report(message, bot, "View_hw_all_command", e)
+
+
+def reg(dp):
+	dp.register_message_handler(View_hw_select_day, text="اختيار يوم 📋")
+	dp.register_message_handler(View_hw_command, state=Viewhw.day)
+	dp.register_message_handler(View_hw_all_command, text="عرض واجبات الاسبوع 📖")

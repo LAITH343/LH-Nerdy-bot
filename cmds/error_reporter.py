@@ -1,6 +1,5 @@
-import asyncio
-from aiogram import types
+from config import errors_chat_id
 
 async def report(message, bot, func, error):
-    await bot.send_message(-708189144, f"error occurred with @{message.from_user.username}\nat function {func}\n{error}")
+    await bot.send_message(int(errors_chat_id), f"error occurred with @{message.from_user.username}\nat function {func}\n{error}")
 
