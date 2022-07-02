@@ -222,3 +222,24 @@ def check_username_changed(uid, user_name):
     else:
         db.close()
         return False
+
+
+def change_admin_stage(uid, stage):
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("Update users_info set stage=? WHERE id=? AND admin=?", (stage, str(uid), "True"))
+    db.commit()
+    db.close()
+    return True
+
+def get_admin_stage(uid):
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("SELECT stage FROM users_info WHERE id=? AND admin='True'", (str(uid),))
+    stage = c.fetchone()
+    if stage is not None:
+        db.close()
+        return stage[0]
+    else:
+        db.close()
+        return False

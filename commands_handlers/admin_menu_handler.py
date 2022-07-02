@@ -1,7 +1,8 @@
 from cmds.logger import send_log
-from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_users_uid, get_user_username
+from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_users_uid, \
+    get_user_username, change_admin_stage, get_admin_stage
 from cmds.markup_manager import get_user_markup, custom_markup
-from cmds.classes import AnnoAll, AddManager, DelManager
+from cmds.classes import AnnoAll, AddManager, DelManager, ChangeStage
 from cmds import error_reporter
 from config import bot
 
@@ -160,6 +161,65 @@ async def Add_manager_get_uid_and_add(message, state):
         await error_reporter.report(message, bot, "Add_manager_get_uid_and_add", e)
 
 
+async def change_stage_canceler(message, state):
+    try:
+        await state.finish()
+        await message.answer("تم الغاء التغيير", reply_markup=get_user_markup(message.from_user.id))
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "change_stage_canceler", e)
+
+
+async def change_stage(message):
+    try:
+        if not check_admin(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء")
+        else:
+            stage_translate_revers = {
+                "stage1": "مرحلة اولى",
+                "stage2": "مرحلة ثانية",
+                "stage3": "مرحلة ثالثة",
+                "stage4": "مرحلة رابعة",
+            }
+            await ChangeStage.stage.set()
+            stages = ["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة","الغاء التغيير"]
+            stages.remove(stage_translate_revers[get_admin_stage(message.from_user.id)])
+            await message.answer("أختر المرحلة التي تريد التحويل اليها", reply_markup=custom_markup(stages))
+    except Exception as e:
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "change_stage", e)
+
+
+async def change_stage_command(message, state):
+    try:
+        if message.text not in ["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة","الغاء التغيير"]:
+            await message.answer("أختر المرحلة من القائمة")
+        else:
+            stage_translate = {
+                "مرحلة اولى": "stage1",
+                "مرحلة ثانية": "stage2",
+                "مرحلة ثالثة": "stage3",
+                "مرحلة رابعة": "stage4"
+            }
+            stage_translate_revers = {
+                "stage1": "مرحلة اولى",
+                "stage2": "مرحلة ثانية",
+                "stage3": "مرحلة ثالثة",
+                "stage4": "مرحلة رابعة",
+            }
+            async with state.proxy() as data:
+                data["old_stage"] = get_admin_stage(message.from_user.id)
+                change_admin_stage(message.from_user.id, stage_translate[message.text])
+                await message.answer("تم تغيير المرحلة بنجاح", reply_markup=get_user_markup(message.from_user.id))
+                await send_log(message, bot, "تغيير مرحلة", f"قام @{get_user_username(message.from_user.id)} بتغيير مرحلته من {stage_translate_revers[data['old_stage']]} الى {stage_translate_revers[get_admin_stage(message.from_user.id)]}")
+            await state.finish()
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "change_stage_command", e)
+
+
 def reg(dp):
     dp.register_message_handler(View_all_users, text="عرض جميع المستخدمين 📋")
     dp.register_message_handler(Send_anno_4all, text='أرسال اعلان للجميع 📢')
@@ -167,7 +227,12 @@ def reg(dp):
     dp.register_message_handler(Delete_manager, text ="حذف مشرف 💂")
     dp.register_message_handler(Delete_manager_get_stage, state=DelManager.stage)
     dp.register_message_handler(Delete_manager_get_uid_and_del, state=DelManager.uid)
-    dp.register_message_handler(Add_manager, text = "اضافة مشرف 💂")
+    dp.register_message_handler(Add_manager, text="اضافة مشرف 💂")
     dp.register_message_handler(Add_manager_get_stage, state=AddManager.stage)
     dp.register_message_handler(Add_manager_get_uid_and_add, state=AddManager.uid)
+    dp.register_message_handler(change_stage_canceler, text="الغاء التغيير", state=ChangeStage)
+    dp.register_message_handler(change_stage, text="تغيير المرحلة 🔄")
+    dp.register_message_handler(change_stage_command, state=ChangeStage.stage)
+
+
 

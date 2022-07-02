@@ -79,6 +79,6 @@ class AddNewUser(StatesGroup):
 class DelUser(StatesGroup):
 	uid = State()
 
-# class CompressPdf(StatesGroup):
-# 	folder = State()
-
+class ChangeStage(StatesGroup):
+	stage = State()
+	old_stage = State()
