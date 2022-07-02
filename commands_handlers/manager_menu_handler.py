@@ -7,7 +7,7 @@ from cmds.classes import DelHW, AddHW, Anno, Del_File, AddNewFile, AddNewExtraFi
 from cmds.hw_adder import add_hw
 from cmds.books_manager import add_file, del_file, get_files_list, del_extra_file, add_extra_file, get_extra_files_list
 from cmds import error_reporter, user_manager
-from config import bot
+from config import bot, bot_owner
 
 
 async def Manager_del_hw(message):
@@ -119,6 +119,8 @@ async def Add_book_get_file_name(message, state):
     try:
         if not message.text:
             await message.answer("ارسل اسم الملف اولا")
+        elif len(message.text) > 20:
+            await message.answer("الاسم لا يمكن أن يكون أكثر من 20 حرف!")
         else:
             async with state.proxy() as data:
                 data["file_name"] = message.text
@@ -197,6 +199,8 @@ async def Add_extra_file_get_file_name(message, state):
     try:
         if not message.text:
             await message.answer("ارسل اسم الملف اولا")
+        elif len(message.text) > 20:
+            await message.answer("الاسم لا يمكن أن يكون أكثر من 20 حرف!")
         else:
             async with state.proxy() as data:
                 data["file_name"] = message.text
@@ -314,6 +318,8 @@ async def Del_user_command(message, state):
             await message.answer("يرجى ارسال ارقام فقط")
         elif not check_user_exist(message.text):
             await message.answer("المستخدم غير موجود")
+        elif int(message.text) == int(bot_owner):
+            await message.answer("لا يمكنك حذف مالك البوت")
         else:
             translate = {
                 "stage1": "اولى",

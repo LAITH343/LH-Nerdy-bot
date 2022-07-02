@@ -3,6 +3,8 @@ import sqlite3
 
 # table users_info
 # (id TEXT, name TEXT, username TEXT, stage TEXT, disable TEXT, manager TEXT, admin TEXT)
+from config import bot_owner
+
 
 def add_admin(uid):
     db = sqlite3.connect("storage/users.db")
@@ -84,6 +86,8 @@ def add_user(stage, uid, name, username):
 
 
 def del_user(uid, stage):
+    if int(uid) == int(bot_owner):
+        return False
     db = sqlite3.connect("storage/users.db")
     c = db.cursor()
     c.execute(f"DELETE FROM users_info WHERE id=? AND stage=?", (uid, stage))
