@@ -1,5 +1,6 @@
 aiogram==2.20
-Pillow==9.1.1
-PyPDF2==2.3.1
+openpyxl==3.0.10
+Pillow==9.2.0
+PyPDF2==2.4.1
 python-dotenv==0.20.0
 PyYAML==6.0
