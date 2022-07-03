@@ -1,4 +1,7 @@
+import os
+
 from cmds.logger import send_log
+from cmds.statistics import get_bot_users
 from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_users_uid, \
     get_user_username, change_admin_stage, get_admin_stage
 from cmds.markup_manager import get_user_markup, custom_markup
@@ -12,8 +15,9 @@ async def View_all_users(message):
         if not check_admin(message.from_user.id):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
         else:
-            for user in await get_all_usernames():
-                await message.answer(user, reply_markup=get_user_markup(message.from_user.id))
+            file = get_bot_users()
+            await bot.send_document(message.from_user.id, document=open(file, 'rb'))
+            os.system(f"rm -f {file}")
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "View_all_users", e)
