@@ -3,7 +3,7 @@ from openpyxl import load_workbook
 from datetime import date
 
 
-def get_bot_users():
+async def get_bot_users():
     wb = load_workbook("sources/users_sheet.xlsx")
     us = wb.active
     n = 2
@@ -22,7 +22,6 @@ def get_bot_users():
         us[f"B{n}"] = f"{int(i[0])} {i[1]}"
         n += 1
     us["G3"] = f"=COUNTA(B2:B{n-1})"
-    wb.save("/home/laith/Desktop/test.xlsx")
     c.execute("SELECT id, username FROM users_info WHERE stage= 'stage3'")
     ids = c.fetchall()
     n = 2

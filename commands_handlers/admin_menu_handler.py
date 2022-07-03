@@ -15,7 +15,7 @@ async def View_all_users(message):
         if not check_admin(message.from_user.id):
             await bot.send_message(message.chat.id, "عذرا ليس لديك صلاحية ﻷتمام هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
         else:
-            file = get_bot_users()
+            file = await get_bot_users()
             await bot.send_document(message.from_user.id, document=open(file, 'rb'))
             os.system(f"rm -f {file}")
     except Exception as e:
