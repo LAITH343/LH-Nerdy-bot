@@ -4,7 +4,7 @@ from cmds.logger import send_log
 from cmds.statistics import get_bot_users
 from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_users_uid, \
     get_user_username, change_admin_stage, get_admin_stage
-from cmds.markup_manager import get_user_markup, custom_markup
+from cmds.markup_manager import get_user_markup, custom_markup, admin_markup
 from cmds.classes import AnnoAll, AddManager, DelManager, ChangeStage
 from cmds import error_reporter
 from config import bot
@@ -42,7 +42,7 @@ async def Get_anno_msg_and_send(message, state):
             data['m'] += message.text
             for user in get_users_uid():
                 await bot.send_message(user, data['m'])
-            await message.reply("تم ارسال الاعلان بنجاح", reply_markup=get_user_markup(message.from_user.id))
+            await message.reply("تم ارسال الاعلان بنجاح", reply_markup=admin_markup())
             await send_log(message, bot, "ارسال اعلان للجميع", f"تم ارسال\n{data['m']}")
         await state.finish()
     except Exception as e:
@@ -99,7 +99,7 @@ async def Delete_manager_get_uid_and_del(message, state):
             async with state.proxy() as data:
                 data['uid'] = int(message.text)
                 del_manager(data['uid'])
-                await message.reply("تم الحذف بنجاح", reply_markup=get_user_markup(message.from_user.id))
+                await message.reply("تم الحذف بنجاح", reply_markup=admin_markup())
                 await send_log(message, bot, "حذف مشرف", f"تم حذف @{get_user_username(data['uid'])} مشرف مرحلة {translate[data['stage']]}")
             await state.finish()
     except Exception as e:
@@ -156,7 +156,7 @@ async def Add_manager_get_uid_and_add(message, state):
             async with state.proxy() as data:
                 data['uid'] = int(message.text)
                 add_manager(data['uid'])
-                await message.reply("تم الاضافة بنجاح", reply_markup=get_user_markup(message.from_user.id))
+                await message.reply("تم الاضافة بنجاح", reply_markup=admin_markup())
                 await send_log(message, bot, "أضافة مشرف", f"تم أضافة @{get_user_username(data['uid'])} مشرف للمرحلة {translate[data['stage']]}")
             await state.finish()
     except Exception as e:
@@ -168,7 +168,7 @@ async def Add_manager_get_uid_and_add(message, state):
 async def change_stage_canceler(message, state):
     try:
         await state.finish()
-        await message.answer("تم الغاء التغيير", reply_markup=get_user_markup(message.from_user.id))
+        await message.answer("تم الغاء التغيير", reply_markup=admin_markup())
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
@@ -215,7 +215,7 @@ async def change_stage_command(message, state):
             async with state.proxy() as data:
                 data["old_stage"] = get_admin_stage(message.from_user.id)
                 change_admin_stage(message.from_user.id, stage_translate[message.text])
-                await message.answer("تم تغيير المرحلة بنجاح", reply_markup=get_user_markup(message.from_user.id))
+                await message.answer("تم تغيير المرحلة بنجاح", reply_markup=admin_markup())
                 await send_log(message, bot, "تغيير مرحلة", f"قام @{get_user_username(message.from_user.id)} بتغيير مرحلته من {stage_translate_revers[data['old_stage']]} الى {stage_translate_revers[get_admin_stage(message.from_user.id)]}")
             await state.finish()
     except Exception as e:
