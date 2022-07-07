@@ -24,21 +24,21 @@ async def View_admin_list(message):
 
 async def View_hw_menu(message):
     if not check_user_exist(message.from_user.id):
-        await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+        await bot.send_message(message.chat.id, "أنت غير مسجل اطلب من ممثل المرحلة أضافتك", reply_markup=get_user_markup(message.from_user.id))
     else:
         await bot.send_message(message.chat.id, "اختر اليوم من القائمة", reply_markup=custom_markup(["اختيار يوم 📋","عرض واجبات الاسبوع 📖","الرجوع للقائمة الرئيسية 🏠"]))
 
 
 async def tools_menu(message):
     if not check_user_exist(message.from_user.id):
-        await bot.send_message(message.chat.id, "يرجى اختيار المرحلة اولا")
+        await bot.send_message(message.chat.id, "أنت غير مسجل اطلب من ممثل المرحلة أضافتك")
     else:
         await message.reply("أختر من القائمة", reply_markup=custom_markup(["دمج ملفات pdf","تحويل الصور الى pdf","الرجوع للقائمة الرئيسية 🏠"]))
 
 
 async def Books_View(message):
     if not check_user_exist(message.from_user.id):
-        message.answer("يجب اختيار مرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+        message.answer("أنت غير مسجل اطلب من ممثل المرحلة أضافتك", reply_markup=get_user_markup(message.from_user.id))
     else:
         if get_files_list(check_user_stage(message.from_user.id)):
             await GetBook.temp.set()
@@ -47,11 +47,11 @@ async def Books_View(message):
 
 async def Extra_file_View(message):
     if not check_user_exist(message.from_user.id):
-        message.answer("يجب اختيار مرحلة اولا", reply_markup=get_user_markup(message.from_user.id))
+        message.answer("أنت غير مسجل اطلب من ممثل المرحلة أضافتك", reply_markup=get_user_markup(message.from_user.id))
     else:
         if get_extra_files_list(check_user_stage(message.from_user.id)):
             await GetFile.temp.set()
-        await message.answer("اختر كاتب من القائمة", reply_markup=extra_file_markup(get_extra_files_list(check_user_stage(message.from_user.id))))
+        await message.answer("اختر كتاب من القائمة", reply_markup=extra_file_markup(get_extra_files_list(check_user_stage(message.from_user.id))))
 
 
 async def cancel_handler(message, state):
@@ -68,7 +68,7 @@ async def cancel_handler(message, state):
 async def back_to_main_menu(message, state):
     try:
         if not user_manager.check_user_exist(message.from_user.id):
-            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا",
+            await bot.send_message(message.chat.id, "أنت غير مسجل اطلب من ممثل المرحلة أضافتك",
                                    reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
@@ -82,7 +82,7 @@ async def back_to_main_menu(message, state):
 async def back_to_main_menu_book(message, state):
     try:
         if not user_manager.check_user_exist(message.from_user.id):
-            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا",
+            await bot.send_message(message.chat.id, "أنت غير مسجل اطلب من ممثل المرحلة أضافتك",
                                    reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
@@ -96,7 +96,7 @@ async def back_to_main_menu_book(message, state):
 async def back_to_mainmenu(message):
     try:
         if not user_manager.check_user_exist(message.from_user.id):
-            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا",
+            await bot.send_message(message.chat.id, "أنت غير مسجل اطلب من ممثل المرحلة أضافتك",
                                    reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
@@ -108,7 +108,7 @@ async def back_to_mainmenu(message):
 async def main_menu(message):
     try:
         if not user_manager.check_user_exist(message.from_user.id):
-            await bot.send_message(message.chat.id, "انت غير مسجل!\nاختر المرحلة اولا",
+            await bot.send_message(message.chat.id, "أنت غير مسجل اطلب من ممثل المرحلة أضافتك",
                                    reply_markup=get_user_markup(message.from_user.id))
         else:
             await message.reply("تم الرجوع الى القائمة الرئيسية", reply_markup=get_user_markup(message.from_user.id))
