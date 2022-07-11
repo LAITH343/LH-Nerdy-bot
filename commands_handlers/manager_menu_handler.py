@@ -318,6 +318,8 @@ async def Del_user_command(message, state):
             await message.answer("يرجى ارسال ارقام فقط")
         elif not check_user_exist(message.text):
             await message.answer("المستخدم غير موجود")
+        elif check_user_stage(message.text) != get_manager_stage(message.from_user.id):
+            await message.answer("المستخدم غير موجود")
         elif int(message.text) == int(bot_owner):
             await message.answer("لا يمكنك حذف مالك البوت")
         else:

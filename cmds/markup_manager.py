@@ -4,13 +4,13 @@ from cmds.user_manager import check_admin, get_manager_stage, check_user_exist
 
 def get_user_markup(uid):
 	main_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-	if check_user_exist(uid) == True:
+	if check_user_exist(uid):
 		main_markup.add("معلوماتي ❓", "عرض الواجبات 📃")
-		main_markup.add("الأدوات 🧰", )
 		main_markup.add("الملفات 📎", "الكتب 📚")
-		if get_manager_stage(uid) != False:
+		main_markup.add("الأدوات 🧰", )
+		if get_manager_stage(uid):
 			main_markup.add("عرض صلاحيات المشرف 💂")
-		if check_admin(uid) == True:
+		if check_admin(uid):
 			main_markup.add("عرض صلاحيات الادمن 👮")
 	else:
 		pass
@@ -58,7 +58,7 @@ def del_books_markup(options: list):
 	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	for option in options:
 		custom.add(option)
-	if options == []:
+	if not options:
 		custom.add("الرجوع للقائمة الرئيسية 🏠")
 	else:
 		custom.add("الغاء الحذف")
@@ -77,7 +77,7 @@ def del_extra_file_markup(options: list):
 	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	for option in options:
 		custom.add(option)
-	if options == []:
+	if not options:
 		custom.add("الرجوع للقائمة الرئيسية 🏠")
 	else:
 		custom.add("الغاء حذف الملف")
