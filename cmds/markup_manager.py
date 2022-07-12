@@ -5,16 +5,16 @@ from cmds.user_manager import check_admin, get_manager_stage, check_user_exist
 def get_user_markup(uid):
 	main_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	if check_user_exist(uid):
-		main_markup.add("معلوماتي ❓", "عرض الواجبات 📃")
+		main_markup.add("الأدوات 🧰", "الواجبات 📃")
 		main_markup.add("الملفات 📎", "الكتب 📚")
-		main_markup.add("الأدوات 🧰", )
+		main_markup.add("معلوماتي ❓", )
 		if get_manager_stage(uid):
-			main_markup.add("عرض صلاحيات المشرف 💂")
+			main_markup.add("صلاحيات المشرف 💂")
 		if check_admin(uid):
-			main_markup.add("عرض صلاحيات الادمن 👮")
+			main_markup.add("صلاحيات الادمن 👮")
 	else:
 		pass
-	main_markup.add("أغلاق ❌")
+	main_markup.add("أغلاق القائمة ❌")
 	return main_markup
 
 

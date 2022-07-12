@@ -41,7 +41,7 @@ async def add_admin(message: types.Message, state: FSMContext):
 # check if the user already added into the system
 @dp.message_handler(lambda message: not check_user_exist(message.from_user.id))
 async def Not_inside_sys(message: types.Message):
-    await message.answer(f"أنت غير مسجل اطلب من ممثل المرحلة أضافتك\n الID الخاص بك {message.from_user.id}", reply_markup=types.ReplyKeyboardRemove())
+    await message.answer(f"مرحبا \n ﻷستخدام البوت أطلب من ممثل المرحلة أضافتك وسيتم أبلاغك عند أضافتك \nID: {message.from_user.id}", reply_markup=types.ReplyKeyboardRemove())
 
 
 # check user not register
@@ -49,7 +49,7 @@ async def Not_inside_sys(message: types.Message):
 async def Get_user_info(message: types.Message):
     try:
         update_user_info(message.from_user.id, message.from_user.full_name, message.from_user.username)
-        await message.answer("أهلا بك في البوت", reply_markup=get_user_markup(message.from_user.id))
+        await message.answer("أهلا بك", reply_markup=get_user_markup(message.from_user.id))
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - check user not req", e)
@@ -65,7 +65,7 @@ async def username_changed(message: types.Message):
 @dp.message_handler(lambda message: message.text in ["start", "بدء", "/start"])
 async def start_message(message: types.Message):
     try:
-        await bot.send_message(message.chat.id, "أهلا بك في البوت", reply_markup=get_user_markup(message.from_user.id))
+        await bot.send_message(message.chat.id, "أهلا بك", reply_markup=get_user_markup(message.from_user.id))
     except Exception as e:
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
         await error_reporter.report(message, bot, "main - start message/command handler", e)

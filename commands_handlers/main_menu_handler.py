@@ -40,18 +40,24 @@ async def Books_View(message):
     if not check_user_exist(message.from_user.id):
         message.answer("أنت غير مسجل اطلب من ممثل المرحلة أضافتك", reply_markup=get_user_markup(message.from_user.id))
     else:
-        if get_files_list(check_user_stage(message.from_user.id)):
-            await GetBook.temp.set()
-        await message.answer("اختر كاتب من القائمة", reply_markup=books_markup(get_files_list(check_user_stage(message.from_user.id))))
+        if not get_files_list(check_user_stage(message.from_user.id)):
+            await message.reply("لم يتم أضافة كتب بعد")
+        else:
+            if get_files_list(check_user_stage(message.from_user.id)):
+                await GetBook.temp.set()
+            await message.answer("اختر كاتب من القائمة", reply_markup=books_markup(get_files_list(check_user_stage(message.from_user.id))))
 
 
 async def Extra_file_View(message):
     if not check_user_exist(message.from_user.id):
         message.answer("أنت غير مسجل اطلب من ممثل المرحلة أضافتك", reply_markup=get_user_markup(message.from_user.id))
     else:
-        if get_extra_files_list(check_user_stage(message.from_user.id)):
-            await GetFile.temp.set()
-        await message.answer("اختر كتاب من القائمة", reply_markup=extra_file_markup(get_extra_files_list(check_user_stage(message.from_user.id))))
+        if not get_extra_files_list(check_user_stage(message.from_user.id)):
+            await message.reply("لم يتم أضافة ملفات بعد")
+        else:
+            if get_extra_files_list(check_user_stage(message.from_user.id)):
+                await GetFile.temp.set()
+            await message.answer("اختر كتاب من القائمة", reply_markup=extra_file_markup(get_extra_files_list(check_user_stage(message.from_user.id))))
 
 
 async def cancel_handler(message, state):
@@ -140,12 +146,12 @@ def reg(dp):
     dp.register_message_handler(back_to_main_menu_book, text="الرجوع للقائمة الرئيسية", state=GetBook.temp)
     dp.register_message_handler(back_to_main_menu, text="الرجوع للقائمة الرئيسية", state=GetFile.temp)
     dp.register_message_handler(cancel_handler, text="الغاء الادخال", state='*')
-    dp.register_message_handler(View_manager_list, text="عرض صلاحيات المشرف 💂")
-    dp.register_message_handler(View_admin_list, text="عرض صلاحيات الادمن 👮")
-    dp.register_message_handler(View_hw_menu, text="عرض الواجبات 📃")
-    dp.register_message_handler(tools_menu, text="أدوات 🧰")
+    dp.register_message_handler(View_manager_list, text="صلاحيات المشرف 💂")
+    dp.register_message_handler(View_admin_list, text="صلاحيات الادمن 👮")
+    dp.register_message_handler(View_hw_menu, text="الواجبات 📃")
+    dp.register_message_handler(tools_menu, text="الأدوات 🧰")
     dp.register_message_handler(Books_View, text="الكتب 📚")
     dp.register_message_handler(Extra_file_View, text="الملفات 📎")
     dp.register_message_handler(my_info_message, text="معلوماتي ❓")
-    dp.register_message_handler(cancel_message, text="أغلاق ❌")
+    dp.register_message_handler(cancel_message, text="أغلاق القائمة ❌")
 

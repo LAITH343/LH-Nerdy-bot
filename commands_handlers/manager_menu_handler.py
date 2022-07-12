@@ -294,6 +294,7 @@ async def Add_New_user_command(message, state):
             await state.finish()
             await message.answer("تم أضافة الطالب", reply_markup=manager_markup())
             await send_log(message, bot, "أضافة طالب", f"تم أضافة {data['uid']} للمرحلة {translate[get_manager_stage(message.from_user.id)]}")
+            await bot.send_message(int(message.text), "مرحبا\nتم أضافتك, لبدء الاستخدام أرسل 'بدء' أو اضغط على /start")
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
