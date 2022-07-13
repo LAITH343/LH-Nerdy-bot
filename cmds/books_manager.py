@@ -1,3 +1,4 @@
+import os
 import sqlite3
 # books (stage TEXT, book_name TEXT, book_path TEXT)
 # files (stage TEXT, file_name TEXT, file_path TEXT)
@@ -63,6 +64,9 @@ def get_extra_files_list(stage):
 async def del_file(stage, name):
 	db = sqlite3.connect("storage/main_storage.db")
 	c = db.cursor()
+	c.execute("SELECT book_path FROM books WHERE stage=? AND book_name=?", (stage, name))
+	file = c.fetchone()
+	os.system(f"rm -f {file[0]}")
 	c.execute("DELETE FROM books WHERE stage=? AND book_name=?", (stage, name))
 	db.commit()
 	db.close()
@@ -72,6 +76,9 @@ async def del_file(stage, name):
 async def del_extra_file(stage, name):
 	db = sqlite3.connect("storage/main_storage.db")
 	c = db.cursor()
+	c.execute("SELECT file_path FROM files WHERE stage=? AND file_name=?", (stage, name))
+	file = c.fetchone()
+	os.system(f"rm -f {file[0]}")
 	c.execute("DELETE FROM files WHERE stage=? AND file_name=?", (stage, name))
 	db.commit()
 	db.close()
