@@ -6,8 +6,8 @@ cache/*
 .idea/
 !cache/.gitkeep
 commands_handlers/__pycache__/
-storage/books/
-storage/extra/
+storage/
+!storage/.gitkeep
 !storage/books/stage1/.gitkeep
 !storage/books/stage2/.gitkeep
 !storage/books/stage3/.gitkeep
@@ -16,5 +16,4 @@ storage/extra/
 !storage/extra/stage2/.gitkeep
 !storage/extra/stage3/.gitkeep
 !storage/extra/stage4/.gitkeep
-storage/
-testing.py
+
