@@ -19,3 +19,4 @@ storage/extra/
 storage/
 testing.py
 
+cmds/books_manager.py

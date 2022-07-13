@@ -1,90 +1,96 @@
-import yaml 
-import asyncio
-from os import system
+import sqlite3
+# books (stage TEXT, book_name TEXT, book_path TEXT)
+# files (stage TEXT, file_name TEXT, file_path TEXT)
+try:
+	db = sqlite3.connect("storage/main_storage.db")
+	c = db.cursor()
+	c.execute("CREATE TABLE books (stage TEXT, book_name TEXT, book_path TEXT)")
+	c.execute("CREATE TABLE files (stage TEXT, file_name TEXT, file_path TEXT)")
+	db.commit()
+	db.close()
+except:
+	pass
 
 
 async def add_file(stage, name, path):
-	with open("storage/links.yml", 'r') as l:
-		link = yaml.safe_load(l)
-		link[stage]["book_name"].append(name)
-		link[stage]["book_path"].append(path)
+	try:
+		db = sqlite3.connect("storage/main_storage.db")
+		c = db.cursor()
+		c.execute("INSERT INTO books VALUES (?, ?, ?)", (stage, name, path))
+		db.commit()
+		db.close()
+		return True
+	except:
+		return False
 
-	if link:
-		with open('storage/links.yml', 'w') as w:
-			yaml.safe_dump(link, w)
-	return True
 
 async def add_extra_file(stage, name, path):
-	with open("storage/links.yml", 'r') as l:
-		link = yaml.safe_load(l)
-		link[stage]["extra_file_name"].append(name)
-		link[stage]["extra_file_path"].append(path)
+	try:
+		db = sqlite3.connect("storage/main_storage.db")
+		c = db.cursor()
+		c.execute("INSERT INTO files VALUES (?, ?, ?)", (stage, name, path))
+		db.commit()
+		db.close()
+		return True
+	except:
+		return False
 
-	if link:
-		with open('storage/links.yml', 'w') as w:
-			yaml.safe_dump(link, w)
-	return True
 
 def get_files_list(stage):
-	with open("storage/links.yml", 'r') as l:
-		link = yaml.safe_load(l)
-		file_name = link[stage]["book_name"]
-	
-	files_list = []	
+	db = sqlite3.connect("storage/main_storage.db")
+	c = db.cursor()
+	c.execute("SELECT book_name FROM books WHERE stage=?", (stage,))
+	file_name = c.fetchall()
+	files_list = []
 	for file in file_name:
-		files_list.append(file[0:])
-
+		files_list.append(file[0])
+	db.close()
 	return files_list
+
 
 def get_extra_files_list(stage):
-	with open("storage/links.yml", 'r') as l:
-		link = yaml.safe_load(l)
-		file_name = link[stage]["extra_file_name"]
-	
-	files_list = []	
+	db = sqlite3.connect("storage/main_storage.db")
+	c = db.cursor()
+	c.execute("SELECT file_name FROM files WHERE stage=?", (stage,))
+	file_name = c.fetchall()
+	files_list = []
 	for file in file_name:
-		files_list.append(file[0:])
-
+		files_list.append(file[0])
+	db.close()
 	return files_list
 
+
 async def del_file(stage, name):
-	with open("storage/links.yml", 'r') as l:
-		link = yaml.safe_load(l)
-		index = link[stage]["book_name"].index(name)
-		file_be_del = link[stage]["book_path"][index]
-		link[stage]["book_name"].pop(index)
-		link[stage]["book_path"].pop(index)
-	if link:
-		system(f"rm -f {file_be_del}")
-		with open("storage/links.yml", 'w') as wd:
-			yaml.safe_dump(link, wd)
+	db = sqlite3.connect("storage/main_storage.db")
+	c = db.cursor()
+	c.execute("DELETE FROM books WHERE stage=? AND book_name=?", (stage, name))
+	db.commit()
+	db.close()
 	return True
+
 
 async def del_extra_file(stage, name):
-	with open("storage/links.yml", 'r') as l:
-		link = yaml.safe_load(l)
-		index = link[stage]["extra_file_name"].index(name)
-		file_be_del = link[stage]["extra_file_path"][index]
-		link[stage]["extra_file_name"].pop(index)
-		link[stage]["extra_file_path"].pop(index)
-	if link:
-		system(f"rm -f {file_be_del}")
-		with open("storage/links.yml", 'w') as wd:
-			yaml.safe_dump(link, wd)
+	db = sqlite3.connect("storage/main_storage.db")
+	c = db.cursor()
+	c.execute("DELETE FROM files WHERE stage=? AND file_name=?", (stage, name))
+	db.commit()
+	db.close()
 	return True
 
+
 def get_file_by_name(stage, name):
-	with open("storage/links.yml", 'r') as links:
-		cfg = yaml.safe_load(links)
-		index = cfg[stage]["book_name"].index(name)
-		file_path = cfg[stage]["book_path"][index]
-	
-	return file_path
+	db = sqlite3.connect("storage/main_storage.db")
+	c = db.cursor()
+	c.execute("SELECT book_path FROM books WHERE stage=? AND book_name=?", (stage, name))
+	file_path = c.fetchone()
+	db.close()
+	return file_path[0]
+
 
 def get_extra_file_by_name(stage, name):
-	with open("storage/links.yml", 'r') as links:
-		cfg = yaml.safe_load(links)
-		index = cfg[stage]["extra_file_name"].index(name)
-		file_path = cfg[stage]["extra_file_path"][index]
-	
-	return file_path
+	db = sqlite3.connect("storage/main_storage.db")
+	c = db.cursor()
+	c.execute("SELECT file_path FROM files WHERE stage=? AND file_name=?", (stage, name))
+	file_path = c.fetchone()
+	db.close()
+	return file_path[0]
