@@ -1,9 +1,18 @@
 import sqlite3
-
-
 # table users_info
 # (id TEXT, name TEXT, username TEXT, stage TEXT, disable TEXT, manager TEXT, admin TEXT)
 from config import bot_owner
+
+try:
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("CREATE TABLE users_info (id TEXT, name TEXT, username TEXT, stage TEXT, disable TEXT, manager TEXT, admin TEXT)")
+    db.commit()
+    c.execute("INSERT INTO users_info VALUES (?, ?, ?, ?, ?, ?, ?)", (str(bot_owner), "notset", "notset", "stage1", "False", "False", "True"))
+    db.commit()
+    db.close()
+except:
+    pass
 
 
 def add_admin(uid):

@@ -18,5 +18,3 @@ storage/extra/
 !storage/extra/stage4/.gitkeep
 storage/
 testing.py
-
-cmds/books_manager.py
