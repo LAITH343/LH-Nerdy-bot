@@ -4,10 +4,17 @@ from cmds.user_manager import get_manager_stage, check_user_stage, get_users_uid
     check_user_exist
 from cmds.markup_manager import get_user_markup, custom_markup, del_books_markup, del_extra_file_markup, manager_markup
 from cmds.classes import DelHW, AddHW, Anno, Del_File, AddNewFile, AddNewExtraFile, Del_Extra_File, AddNewUser, DelUser
-from cmds.hw_adder import add_hw
+from cmds.hw_manager import add_hw
 from cmds.books_manager import add_file, del_file, get_files_list, del_extra_file, add_extra_file, get_extra_files_list
 from cmds import error_reporter, user_manager
 from config import bot, bot_owner
+
+day_translate = {
+            "الاحد": "sunday",
+            "الاثنين": "monday",
+            "الثلاثاء": "tuesday",
+            "الاربعاء": "wednesday",
+            "الخميس": "thursday"}
 
 
 async def Manager_del_hw(message):
@@ -27,7 +34,7 @@ async def Manager_del_hw_command(message, state):
         async with state.proxy() as data:
             data['day'] = message.text
             stage = get_manager_stage(message.from_user.id)
-            add_hw(stage, data['day'], "لا شيء")
+            add_hw(stage, day_translate[data['day']], "لا شيء")
             await message.reply("تم حذف الواجب", reply_markup=manager_markup())
             await send_log(message, bot, "حذف واجب", f"تم حذف واجب يوم {data['day']} ")
         await state.finish()
@@ -65,7 +72,7 @@ async def Manager_add_hw_command(message, state):
     try:
         async with state.proxy() as data:
             data['hw'] = message.text
-            add_hw(get_manager_stage(message.from_user.id), data['day'], data['hw'])
+            add_hw(get_manager_stage(message.from_user.id), day_translate[data['day']], data['hw'])
             await message.reply("تم الاضافة بنجاح", reply_markup=manager_markup())
             await send_log(message, bot, "أضافة واجب", f"تم أضافة واجب يوم {data['day']} الواجب هوة {data['hw']}")
         await state.finish()
