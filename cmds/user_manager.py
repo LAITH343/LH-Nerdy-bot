@@ -7,12 +7,47 @@ try:
     db = sqlite3.connect("storage/users.db")
     c = db.cursor()
     c.execute("CREATE TABLE users_info (id TEXT, name TEXT, username TEXT, stage TEXT, disable TEXT, manager TEXT, admin TEXT)")
+    c.execute("CREATE TABLE ignore_list (id TEXT)")
     db.commit()
     c.execute("INSERT INTO users_info VALUES (?, ?, ?, ?, ?, ?, ?)", (str(bot_owner), "notset", "notset", "stage1", "False", "False", "True"))
     db.commit()
     db.close()
 except:
     pass
+
+
+def ignore_user(uid):
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("INSERT INTO ignore_list VALUES (?)", (str(uid),))
+    db.commit()
+    db.close()
+    return True
+
+
+def unignore_user(uid):
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("DELETE FROM ignore_list WHERE id=?", (str(uid),))
+    db.commit()
+    db.close()
+    return True
+
+
+def get_ignored_users():
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("SELECT id FROM ignore_list")
+    users = c.fetchall()
+    users_list = []
+    if users is not None:
+        for u in users:
+            users_list.append(u[0])
+        db.close()
+        return users_list
+    else:
+        db.close()
+        return False
 
 
 def add_admin(uid):
@@ -91,6 +126,7 @@ def add_user(stage, uid, name, username):
     c.execute("INSERT INTO users_info VALUES (?, ?, ?, ?, ?, ?, ?)", (str(uid), name, username, stage, "False", "False", "False"))
     db.commit()
     db.close()
+    unignore_user(uid)
     return True
 
 

@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from cmds.markup_manager import get_user_markup
 from cmds.user_manager import check_user_not_req, check_user_exist, update_user_info, check_username_changed, \
-    get_user_username
+    get_user_username, ignore_user, get_ignored_users
 from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler, unkown_message_handler, upload_files_handler
 from config import bot, bot_owner
 
@@ -38,10 +38,17 @@ async def add_admin(message: types.Message, state: FSMContext):
         await message.answer("ليس لديك الصلاحيات ﻷجراء هذا الامر")
 
 
+# check if user ignored or not
+@dp.message_handler(lambda message: str(message.from_user.id) in get_ignored_users() != False)
+async def ignore(message: types.Message):
+    pass
+
+
 # check if the user already added into the system
 @dp.message_handler(lambda message: not check_user_exist(message.from_user.id))
 async def Not_inside_sys(message: types.Message):
     await message.answer(f"مرحبا \n ﻷستخدام البوت أطلب من ممثل المرحلة أضافتك وسيتم أبلاغك عند أضافتك \nID: {message.from_user.id}", reply_markup=types.ReplyKeyboardRemove())
+    ignore_user(message.from_user.id)
 
 
 # check user not register
