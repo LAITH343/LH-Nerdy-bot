@@ -21,8 +21,8 @@ def get_user_markup(uid):
 def admin_markup():
 	admin_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	admin_markup.add("اضافة مشرف 💂", "حذف مشرف 💂")
-	admin_markup.add("تغيير المرحلة 🔄")
-	admin_markup.add("أرسال اعلان للجميع 📢")
+	admin_markup.add("تغيير المرحلة 🔄", "أرسال اعلان للجميع 📢")
+	admin_markup.add("أضافة طالب جديد", "حّذف طالب")
 	admin_markup.add("عرض جميع المستخدمين 📋")
 	admin_markup.add("الرجوع للقائمة الرئيسية 🏠")
 	return admin_markup

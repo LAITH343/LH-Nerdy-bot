@@ -3,11 +3,11 @@ import os
 from cmds.logger import send_log
 from cmds.statistics import get_bot_users
 from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_users_uid, \
-    get_user_username, change_admin_stage, get_admin_stage
+    get_user_username, change_admin_stage, get_admin_stage, add_user, check_user_exist, check_user_stage, del_user
 from cmds.markup_manager import get_user_markup, custom_markup, admin_markup
-from cmds.classes import AnnoAll, AddManager, DelManager, ChangeStage
+from cmds.classes import AnnoAll, AddManager, DelManager, ChangeStage, AddNewUserByAdmin, DelUserByAdmin
 from cmds import error_reporter
-from config import bot
+from config import bot, bot_owner
 
 
 async def View_all_users(message):
@@ -224,6 +224,133 @@ async def change_stage_command(message, state):
         await error_reporter.report(message, bot, "change_stage_command", e)
 
 
+async def add_user_by_admin(message):
+    try:
+        if not check_admin(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء")
+        else:
+            await AddNewUserByAdmin.stage.set()
+            await message.answer("أختر المرحلة", reply_markup=custom_markup(["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة","الغاء أضافة الطالب"]))
+    except Exception as e:
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "add_user_by_admin", e)
+
+
+async def add_user_by_admin_stage(message, state):
+    try:
+        if message.text not in ["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة","الغاء أضافة الطالب"]:
+            await message.answer("أختر من القائمة")
+        else:
+            stage_translate = {
+                "مرحلة اولى": "stage1",
+                "مرحلة ثانية": "stage2",
+                "مرحلة ثالثة": "stage3",
+                "مرحلة رابعة": "stage4"
+            }
+            async with state.proxy() as data:
+                data['stage'] = stage_translate[message.text]
+            await AddNewUserByAdmin.next()
+            await message.answer("أرسل ID المستخدم", reply_markup=custom_markup(["الغاء أضافة الطالب"]))
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "add_user_by_admin_stage", e)
+
+
+async def add_user_by_admin_command(message, state):
+    try:
+        if not message.text.isdigit():
+            await message.answer("أرسل أرقام فقط!")
+        elif check_user_exist(message.text):
+            await message.answer("المستخدم موجود بالفعل!")
+        else:
+            stage_translate_revers = {
+                "stage1": "مرحلة اولى",
+                "stage2": "مرحلة ثانية",
+                "stage3": "مرحلة ثالثة",
+                "stage4": "مرحلة رابعة",
+            }
+            async with state.proxy() as data:
+                add_user(data['stage'], message.text, "notset", "notset")
+                await message.answer("تم أضافة المستخدم بنجاح", reply_markup=admin_markup())
+                await bot.send_message(int(message.text), "مرحبا\nتم أضافتك, لبدء الاستخدام أرسل 'بدء' أو اضغط على /start")
+                await send_log(message, bot, "أضافة مستخدم", f"تم أضافة {message.text} الى  {stage_translate_revers[data['stage']]}")
+            await state.finish()
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "add_user_by_admin_command", e)
+
+
+async def add_user_by_admin_canceler(message, state):
+    await state.finish()
+    await message.answer("تم الالغاء", reply_markup=admin_markup())
+
+
+async def Del_user_by_admin(message):
+    try:
+        if not check_admin(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء", reply_markup=get_user_markup(message.from_user.id))
+        else:
+            await DelUserByAdmin.stage.set()
+            await message.answer("أختر المرحلة", reply_markup=custom_markup(["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة","الغاء حّذف الطالب"]))
+    except Exception as e:
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "Del_user_by_admin", e)
+
+
+async def Del_user_by_admin_stage(message, state):
+    try:
+        if message.text not in ["مرحلة اولى","مرحلة ثانية","مرحلة ثالثة","مرحلة رابعة","الغاء حّذف الطالب"]:
+            await message.answer("أختر من القائمة")
+        else:
+            stage_translate = {
+                "مرحلة اولى": "stage1",
+                "مرحلة ثانية": "stage2",
+                "مرحلة ثالثة": "stage3",
+                "مرحلة رابعة": "stage4"
+            }
+            async with state.proxy() as data:
+                data['stage'] = stage_translate[message.text]
+            await DelUserByAdmin.next()
+            await message.answer("أرسل ID الطالب")
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "Del_user_by_admin_stage", e)
+
+
+async def Del_user_by_admin_command(message, state):
+    try:
+        if not message.text.isdigit():
+            await message.answer("يرجى ارسال ارقام فقط")
+        elif not check_user_exist(message.text):
+            await message.answer("المستخدم غير موجود")
+        elif int(message.text) == int(bot_owner):
+            await message.answer("لا يمكنك حذف مالك البوت")
+        else:
+            translate = {
+                "stage1": "اولى",
+                "stage2": "ثانية",
+                "stage3": "ثالثة",
+                "stage4": "رابعة",
+            }
+            async with state.proxy() as data:
+                del_user(message.text, data['stage'])
+                await message.answer("تم حذف الطالب", reply_markup=admin_markup())
+                await send_log(message, bot, "حذف طالب",f"تم حذف {message.text} من المرحلة  {translate[data['stage']]}")
+            await state.finish()
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "Del_user_by_admin_command", e)
+
+
+async def del_user_by_admin_canceler(message, state):
+    await state.finish()
+    await message.answer("تم الالغاء", reply_markup=admin_markup())
+
+
 def reg(dp):
     dp.register_message_handler(View_all_users, text="عرض جميع المستخدمين 📋")
     dp.register_message_handler(Send_anno_4all, text='أرسال اعلان للجميع 📢')
@@ -237,6 +364,17 @@ def reg(dp):
     dp.register_message_handler(change_stage_canceler, text="الغاء التغيير", state=ChangeStage)
     dp.register_message_handler(change_stage, text="تغيير المرحلة 🔄")
     dp.register_message_handler(change_stage_command, state=ChangeStage.stage)
+    dp.register_message_handler(add_user_by_admin_canceler, text="الغاء أضافة الطالب", state=AddNewUserByAdmin)
+    dp.register_message_handler(add_user_by_admin, text="أضافة طالب جديد")
+    dp.register_message_handler(add_user_by_admin_stage, state=AddNewUserByAdmin.stage)
+    dp.register_message_handler(add_user_by_admin_command, state=AddNewUserByAdmin.uid)
+    dp.register_message_handler(del_user_by_admin_canceler,text="الغاء حّذف الطالب", state=DelUserByAdmin)
+    dp.register_message_handler(Del_user_by_admin, text="حّذف طالب")
+    dp.register_message_handler(Del_user_by_admin_stage, state=DelUserByAdmin.stage)
+    dp.register_message_handler(Del_user_by_admin_command, state=DelUserByAdmin.uid)
+
+
+
 
 
 
