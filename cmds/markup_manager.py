@@ -20,20 +20,16 @@ def get_user_markup(uid):
 
 def admin_markup():
 	admin_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-	admin_markup.add("اضافة مشرف 💂", "حذف مشرف 💂")
 	admin_markup.add("تغيير المرحلة 🔄", "أرسال اعلان للجميع 📢")
-	admin_markup.add("أضافة طالب جديد", "حّذف طالب")
-	admin_markup.add("عرض جميع المستخدمين 📋")
+	admin_markup.add("ادارة الطلاب")
 	admin_markup.add("الرجوع للقائمة الرئيسية 🏠")
 	return admin_markup
 
 
 def manager_markup():
 	man_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-	man_markup.add("أضافة طالب", "حذف طالب")
-	man_markup.add("اضافة واجب 📝", "حذف واجب 📝")
-	man_markup.add("اضافة كتاب 📕", "حذف كتاب ❌")
-	man_markup.add("اضافة ملف 📎", "حذف ملف ❌")
+	man_markup.add("الواجبات و الملفات")
+	man_markup.add("أدارة الطلاب")
 	man_markup.add("أرسال اعلان 📢")
 	man_markup.add("الرجوع للقائمة الرئيسية 🏠")
 	return man_markup
@@ -81,4 +77,30 @@ def del_extra_file_markup(options: list):
 		custom.add("الرجوع للقائمة الرئيسية 🏠")
 	else:
 		custom.add("الغاء حذف الملف")
+	return custom
+
+
+def manage_users_markup():
+	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+	custom.add("أضافة طالب", "حذف طالب")
+	custom.add("عرض معلومات طالب")
+	custom.add("الرجوع الى صلاحيات المشرف")
+	return custom
+
+
+def manager_hwandfiles_markup():
+	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+	custom.add("اضافة واجب 📝", "حذف واجب 📝")
+	custom.add("اضافة كتاب 📕", "حذف كتاب ❌")
+	custom.add("اضافة ملف 📎", "حذف ملف ❌")
+	custom.add("الرجوع الى صلاحيات المشرف")
+	return custom
+
+def admin_user_mangment():
+	custom = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+	custom.add("اضافة مشرف 💂", "حذف مشرف 💂")
+	custom.add("أضافة طالب جديد", "حّذف طالب")
+	custom.add("عرض معلومات مفصلة عن طالب")
+	custom.add("عرض جميع المستخدمين 📋")
+	custom.add("الرجوع الى صلاحيات الادمن")
 	return custom

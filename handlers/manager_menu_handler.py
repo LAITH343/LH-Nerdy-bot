@@ -1,9 +1,9 @@
 from aiogram.types import ContentTypes
 from cmds.logger import send_log
-from cmds.user_manager import get_manager_stage, check_user_stage, get_users_uid_by_stage, add_user, del_user, \
+from cmds.user_manager import get_manager_stage, check_user_stage, get_user_id, get_users_uid_by_stage, add_user, del_user, \
     check_user_exist
-from cmds.markup_manager import get_user_markup, custom_markup, del_books_markup, del_extra_file_markup, manager_markup
-from cmds.classes import DelHW, AddHW, Anno, Del_File, AddNewFile, AddNewExtraFile, Del_Extra_File, AddNewUser, DelUser
+from cmds.markup_manager import get_user_markup, custom_markup, del_books_markup, del_extra_file_markup, manage_users_markup, manager_hwandfiles_markup, manager_markup
+from cmds.classes import DelHW, AddHW, Anno, Del_File, AddNewFile, AddNewExtraFile, Del_Extra_File, AddNewUser, DelUser, UserInfo
 from cmds.hw_manager import add_hw
 from cmds.books_manager import add_file, del_file, get_files_list, del_extra_file, add_extra_file, get_extra_files_list
 from cmds import error_reporter, user_manager
@@ -400,7 +400,82 @@ async def cancel_Book_handler(message, state):
     except Exception as e:
         await state.finish()
         await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
-        await error_reporter.report(message, bot, "main - add book cancler ", e)
+        await error_reporter.report(message, bot, "add book cancler ", e)
+
+
+async def files_and_hw_markup(message):
+    try:
+        if not get_manager_stage(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء")
+        else:
+            await message.answer("تم عرض القائمة", reply_markup=manager_hwandfiles_markup())
+    except Exception as e:
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "files_and_hw_markup ", e)
+
+
+async def manage_user_markup(message):
+    try:
+        if not get_manager_stage(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء")
+        else:
+            await message.answer("تم عرض القائمة", reply_markup=manage_users_markup())
+    except Exception as e:
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "files_and_hw_markup ", e)
+
+
+async def back_to_manager_markup(message):
+    try:
+        if not get_manager_stage(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء")
+        else:
+            await message.answer("تم عرض صلاحيات المشرف", reply_markup=manager_markup())
+    except Exception as e:
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "back_to_manager_markup ", e)
+
+
+async def get_user_info(message):
+    try:
+        if not get_manager_stage(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء")
+        else:
+            await UserInfo.id.set()
+            await message.answer("أرسل معرف الطالب (بدون ال@) أو الID", reply_markup=custom_markup(["الغاء البحث"]))
+    except Exception as e:
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "get_user_info ", e)
+
+
+async def get_user_info_id(message, state):
+    try:
+        if not get_manager_stage(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء")
+        elif not message.text.isdigit():
+            uid = get_user_id(message.text)
+            if get_manager_stage(message.from_user.id) != check_user_stage(uid):
+                await message.answer("لم يتم العثور على الطالب")
+            else:
+                uinfo = await bot.get_chat(uid)
+                await message.answer(f"name: {uinfo.full_name}\nid: {uinfo.id}", reply_markup=manager_markup())
+                await state.finish()
+        elif get_manager_stage(message.from_user.id) != check_user_stage(message.text):
+            await message.answer("لم يتم العثور على الطالب")
+        else:
+            uinfo = await bot.get_chat(message.text)
+            await message.answer(f"name: {uinfo.full_name}\nusername: @{uinfo.username}", reply_markup=manager_markup())
+            await state.finish()
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "get_user_info_id ", e)
+
+
+async def user_info_cancel(message, state):
+    await state.finish()
+    await message.answer("تم الغاء البحث", reply_markup=manager_markup())
+
 
 
 def reg(dp):
@@ -431,3 +506,9 @@ def reg(dp):
     dp.register_message_handler(cancel_del_user, text="الغاء حذف الطالب", state=DelUser)
     dp.register_message_handler(Del_user, text="حذف طالب")
     dp.register_message_handler(Del_user_command, state=DelUser.uid)
+    dp.register_message_handler(files_and_hw_markup, text="الواجبات و الملفات")
+    dp.register_message_handler(manage_user_markup, text="أدارة الطلاب")
+    dp.register_message_handler(back_to_manager_markup, text="الرجوع الى صلاحيات المشرف")
+    dp.register_message_handler(user_info_cancel, text="الغاء البحث", state=UserInfo)
+    dp.register_message_handler(get_user_info, text="عرض معلومات طالب")
+    dp.register_message_handler(get_user_info_id, state=UserInfo.id)

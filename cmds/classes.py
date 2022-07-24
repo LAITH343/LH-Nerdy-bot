@@ -93,3 +93,9 @@ class AddNewUserByAdmin(StatesGroup):
 class DelUserByAdmin(StatesGroup):
 	stage = State()
 	uid = State()
+
+class UserInfo(StatesGroup):
+	id = State()
+
+class AdminUserInfo(StatesGroup):
+	id = State()

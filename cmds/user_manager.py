@@ -288,3 +288,24 @@ def get_admin_stage(uid):
     else:
         db.close()
         return False
+
+def get_user_id(username: str):
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("SELECT id FROM users_info WHERE username=?", (username,))
+    uid = c.fetchone()
+    if uid is not None:
+        db.close()
+        return uid[0]
+    else:
+        db.close()
+        return False
+
+def get_user_full_info(uid):
+    db = sqlite3.connect("storage/users.db")
+    c = db.cursor()
+    c.execute("SELECT * FROM users_info WHERE id=?", (str(uid),))
+    users_name = c.fetchone()
+    userlist = []
+    # 0: id, 1: name, 2: username, 3: stage, 4: Is manager, 5: Is admin 
+    return [users_name[0], users_name[1], users_name[2], users_name[3], users_name[5], users_name[6]]

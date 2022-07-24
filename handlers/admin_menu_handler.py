@@ -2,10 +2,10 @@ import os
 
 from cmds.logger import send_log
 from cmds.statistics import get_bot_users
-from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_users_uid, \
+from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_user_full_info, get_user_id, get_users_uid, \
     get_user_username, change_admin_stage, get_admin_stage, add_user, check_user_exist, check_user_stage, del_user
-from cmds.markup_manager import get_user_markup, custom_markup, admin_markup
-from cmds.classes import AnnoAll, AddManager, DelManager, ChangeStage, AddNewUserByAdmin, DelUserByAdmin
+from cmds.markup_manager import admin_user_mangment, get_user_markup, custom_markup, admin_markup
+from cmds.classes import AdminUserInfo, AnnoAll, AddManager, DelManager, ChangeStage, AddNewUserByAdmin, DelUserByAdmin
 from cmds import error_reporter
 from config import bot, bot_owner
 
@@ -351,6 +351,86 @@ async def del_user_by_admin_canceler(message, state):
     await message.answer("تم الالغاء", reply_markup=admin_markup())
 
 
+async def admin_get_user_info(message):
+    try:
+        if not check_admin(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء")
+        else:
+            await AdminUserInfo.id.set()
+            await message.answer("أرسل معرف الطالب (بدون ال@) أو الID", reply_markup=custom_markup(["الغاء البحث"]))
+    except Exception as e:
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "admin_get_user_info ", e)
+
+
+async def admin_get_user_info_id(message, state):
+    try:
+        if not check_admin(message.from_user.id):
+            await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء")
+        elif not message.text.isdigit():
+            uid = get_user_id(message.text)
+            if not check_user_exist(uid):
+                await message.answer("لم يتم العثور على الطالب")
+            else:
+                Stagetranslate = {
+                    "stage1": "اولى",
+                    "stage2": "ثانية",
+                    "stage3": "ثالثة",
+                    "stage4": "رابعة",
+                    "False": "لا",
+                    "True": "نعم"
+                }
+                tfTran = {
+                    "True": "نعم",
+                    "False": "لا"
+                }
+                uinfo = await bot.get_chat(uid)
+                full_info = get_user_full_info(uid)
+                await message.answer(f"الاسم: {uinfo.full_name}\nالأي دي: {uinfo.id}\nالمرحلة: {Stagetranslate[full_info[3]]}\nمشرف؟: {tfTran[full_info[4]]}\nأدمن؟: {tfTran[full_info[5]]}", reply_markup=admin_markup())
+                await state.finish()
+        elif not check_user_exist(message.text):
+            await message.answer("لم يتم العثور على الطالب")
+        else:
+            Stagetranslate = {
+                "stage1": "اولى",
+                "stage2": "ثانية",
+                "stage3": "ثالثة",
+                "stage4": "رابعة",
+                "False": "لا",
+                "True": "نعم"
+            }
+            tfTran = {
+                "True": "نعم",
+                "False": "لا"
+            }
+            uinfo = await bot.get_chat(message.text)
+            full_info = get_user_full_info(message.text)
+            await message.answer(f"الاسم: {uinfo.full_name}\nالمرحلة: {Stagetranslate[full_info[3]]}\nالمعرف(اليوزر): @{uinfo.username}\nمشرف؟: {tfTran[full_info[4]]}\nأدمن؟: {tfTran[full_info[5]]}", reply_markup=admin_markup())
+            await state.finish()
+    except Exception as e:
+        await state.finish()
+        await message.answer("حدث خطأ", reply_markup=get_user_markup(message.from_user.id))
+        await error_reporter.report(message, bot, "admin_get_user_info_id ", e)
+
+
+async def user_info_cancel(message, state):
+    await state.finish()
+    await message.answer("تم الغاء البحث", reply_markup=admin_markup())
+
+
+async def show_users_markup(message):
+    if not check_admin(message.from_user.id):
+        await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء")
+    else:
+        await message.answer("تم عرض القائمة", reply_markup=admin_user_mangment())
+
+async def back_to_admin_markup(message):
+    if not check_admin(message.from_user.id):
+        await message.answer("ليس لديك الصلاحية لعمل هذا الاجراء")
+    else:
+        await message.answer("تم عرض صلاحيات الادمن", reply_markup=admin_markup())
+
+
 def reg(dp):
     dp.register_message_handler(View_all_users, text="عرض جميع المستخدمين 📋")
     dp.register_message_handler(Send_anno_4all, text='أرسال اعلان للجميع 📢')
@@ -372,6 +452,12 @@ def reg(dp):
     dp.register_message_handler(Del_user_by_admin, text="حّذف طالب")
     dp.register_message_handler(Del_user_by_admin_stage, state=DelUserByAdmin.stage)
     dp.register_message_handler(Del_user_by_admin_command, state=DelUserByAdmin.uid)
+    dp.register_message_handler(user_info_cancel, text="الغاء البحث", state=AdminUserInfo)
+    dp.register_message_handler(show_users_markup, text="ادارة الطلاب")
+    dp.register_message_handler(back_to_admin_markup, text="الرجوع الى صلاحيات الادمن")
+    dp.register_message_handler(admin_get_user_info, text="عرض معلومات مفصلة عن طالب")
+    dp.register_message_handler(admin_get_user_info_id, state=AdminUserInfo.id)
+    
 
 
 
