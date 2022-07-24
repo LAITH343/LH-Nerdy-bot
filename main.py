@@ -6,7 +6,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from cmds.markup_manager import get_user_markup
 from cmds.user_manager import check_user_not_req, check_user_exist, update_user_info, check_username_changed, \
     get_user_username, ignore_user, get_ignored_users
-from commands_handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler, unkown_message_handler, upload_files_handler
+from handlers import tools_handler, main_menu_handler, admin_menu_handler, manager_menu_handler, view_hw_handler, unkown_message_handler, upload_files_handler
 from config import bot, bot_owner
 
 # Configure logging
