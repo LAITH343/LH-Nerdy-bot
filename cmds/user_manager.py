@@ -1,9 +1,10 @@
 import sqlite3
+import os
 # table users_info
 # (id TEXT, name TEXT, username TEXT, stage TEXT, disable TEXT, manager TEXT, admin TEXT)
 from config import bot_owner
 
-try:
+if not os.path.exists("storage/users.db"):
     db = sqlite3.connect("storage/users.db")
     c = db.cursor()
     c.execute("CREATE TABLE users_info (id TEXT, name TEXT, username TEXT, stage TEXT, disable TEXT, manager TEXT, admin TEXT)")
@@ -12,8 +13,6 @@ try:
     c.execute("INSERT INTO users_info VALUES (?, ?, ?, ?, ?, ?, ?)", (str(bot_owner), "notset", "notset", "stage1", "False", "False", "True"))
     db.commit()
     db.close()
-except:
-    pass
 
 
 def ignore_user(uid):
