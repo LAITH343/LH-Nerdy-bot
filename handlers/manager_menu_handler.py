@@ -1,13 +1,55 @@
 from aiogram.types import ContentTypes
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from cmds.logger import send_log
 from cmds.user_manager import get_manager_stage, check_user_stage, get_user_id, get_users_uid_by_stage, add_user, del_user, \
     check_user_exist
 from cmds.markup_manager import get_user_markup, custom_markup, del_books_markup, del_extra_file_markup, manage_users_markup, manager_hwandfiles_markup, manager_markup
-from cmds.classes import DelHW, AddHW, Anno, Del_File, AddNewFile, AddNewExtraFile, Del_Extra_File, AddNewUser, DelUser, UserInfo
 from cmds.hw_manager import add_hw
 from cmds.books_manager import add_file, del_file, get_files_list, del_extra_file, add_extra_file, get_extra_files_list
 from cmds import error_reporter, user_manager
 from config import bot, bot_owner
+
+class AddHW(StatesGroup):
+	day = State()
+	hw = State()
+
+
+class DelHW(StatesGroup):
+	day = State()
+	hw = State()
+
+
+class Anno(StatesGroup):
+	m = State()
+
+class AddNewFile(StatesGroup):
+	file_name = State()
+	file_path = State()
+
+
+class AddNewExtraFile(StatesGroup):
+	file_name = State()
+	file_path = State()
+
+
+class Del_File(StatesGroup):
+	temp = State()
+
+class Del_Extra_File(StatesGroup):
+	temp = State()
+
+class AddNewUser(StatesGroup):
+	uid = State()
+
+
+class DelUser(StatesGroup):
+	uid = State()
+
+
+class UserInfo(StatesGroup):
+	id = State()
+
 
 day_translate = {
             "الاحد": "sunday",

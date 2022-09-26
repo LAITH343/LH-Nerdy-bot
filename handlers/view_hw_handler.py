@@ -1,9 +1,13 @@
-from cmds.classes import Viewhw
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from cmds.markup_manager import get_user_markup, custom_markup
 from cmds.hw_manager import get_hw, get_hw_allweek
 from cmds import user_manager
 from cmds import error_reporter
 from config import bot
+
+class Viewhw(StatesGroup):
+	day = State()
 
 
 async def View_hw_select_day(message):
@@ -27,6 +31,9 @@ async def View_hw_command(message, state):
 			"الاربعاء": "wednesday",
 			"الخميس": "thursday"
 		}
+		if message.text not in ["الاحد","الاثنين","الثلاثاء","الاربعاء","الخميس","الغاء الادخال"]:
+			await message.answer("الرجاء الاختيار من القائمة")
+			return
 		async with state.proxy() as data:
 			data['day'] = message.text
 			await message.reply(get_hw(user_manager.check_user_stage(message.from_user.id), day_translate[data['day']]), reply_markup=get_user_markup(message.from_user.id))
@@ -47,6 +54,6 @@ async def View_hw_all_command(message):
 
 
 def reg(dp):
-	dp.register_message_handler(View_hw_select_day, text="اختيار يوم 📋")
+	dp.register_message_handler(View_hw_select_day, lambda message: message.text in ["اختيار يوم 📋", "/hwday"])
 	dp.register_message_handler(View_hw_command, state=Viewhw.day)
-	dp.register_message_handler(View_hw_all_command, text="عرض واجبات الاسبوع 📖")
+	dp.register_message_handler(View_hw_all_command, lambda message: message.text in ["عرض واجبات الاسبوع 📖", "/hwall"])

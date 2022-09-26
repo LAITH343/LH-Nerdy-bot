@@ -1,8 +1,16 @@
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from cmds import user_manager, error_reporter
 from cmds.books_manager import get_extra_files_list, get_extra_file_by_name, get_file_by_name, get_files_list
-from cmds.classes import GetFile, GetBook
 from cmds.markup_manager import get_user_markup
 from config import bot
+
+class GetBook(StatesGroup):
+	temp = State()
+
+class GetFile(StatesGroup):
+	temp = State()
+
 
 
 async def upload_file(message, state):

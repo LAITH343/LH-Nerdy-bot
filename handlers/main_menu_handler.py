@@ -1,11 +1,19 @@
 from aiogram import types
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from cmds import error_reporter, user_manager
 from cmds.markup_manager import manager_markup, admin_markup, get_user_markup, custom_markup, books_markup, extra_file_markup
 from cmds.myinfo import myInfo
 from cmds.user_manager import check_admin, check_user_exist, get_manager_stage, check_user_stage
-from cmds.classes import GetBook, GetFile
 from cmds.books_manager import get_files_list, get_extra_files_list
 from config import bot
+
+
+class GetBook(StatesGroup):
+	temp = State()
+
+class GetFile(StatesGroup):
+	temp = State()
 
 
 async def View_manager_list(message):
@@ -153,5 +161,5 @@ def reg(dp):
     dp.register_message_handler(Books_View, text="الكتب 📚")
     dp.register_message_handler(Extra_file_View, text="الملفات 📎")
     dp.register_message_handler(my_info_message, text="معلوماتي ❓")
-    dp.register_message_handler(cancel_message, text="أغلاق القائمة ❌")
+    dp.register_message_handler(cancel_message, lambda message: message.text in ["أغلاق القائمة ❌", "/exit"])
 
