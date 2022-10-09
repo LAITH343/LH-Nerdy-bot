@@ -1,11 +1,11 @@
 from aiogram import types
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from cmds import error_reporter, user_manager
-from cmds.markup_manager import manager_markup, admin_markup, get_user_markup, custom_markup, books_markup, extra_file_markup
-from cmds.myinfo import myInfo
-from cmds.user_manager import check_admin, check_user_exist, get_manager_stage, check_user_stage
-from cmds.books_manager import get_files_list, get_extra_files_list
+from Utility import error_reporter, user_manager
+from Utility.markup_manager import manager_markup, admin_markup, get_user_markup, custom_markup, books_markup, extra_file_markup
+from Utility.myinfo import myInfo
+from Utility.user_manager import check_admin, check_user_exist, get_manager_stage, check_user_stage
+from Utility.books_manager import get_files_list, get_extra_files_list
 from config import bot
 
 

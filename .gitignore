@@ -17,3 +17,4 @@ storage/
 !storage/extra/stage3/.gitkeep
 !storage/extra/stage4/.gitkeep
 Procfile
+conf.ini

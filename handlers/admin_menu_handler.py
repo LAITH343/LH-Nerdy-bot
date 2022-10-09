@@ -1,12 +1,12 @@
 import os
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from cmds.logger import send_log
-from cmds.statistics import get_bot_users
-from cmds.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_user_full_info, get_user_id, get_users_uid, \
+from Utility.logger import send_log
+from Utility.statistics import get_bot_users
+from Utility.user_manager import get_all_usernames, check_admin, del_manager, add_manager, get_user_full_info, get_user_id, get_users_uid, \
     get_user_username, change_admin_stage, get_admin_stage, add_user, check_user_exist, check_user_stage, del_user
-from cmds.markup_manager import admin_user_mangment, get_user_markup, custom_markup, admin_markup
-from cmds import error_reporter
+from Utility.markup_manager import admin_user_mangment, get_user_markup, custom_markup, admin_markup
+from Utility import error_reporter
 from config import bot, bot_owner
 
 class AddManager(StatesGroup):

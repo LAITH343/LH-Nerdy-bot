@@ -5,10 +5,10 @@ import os
 from aiogram.types import ContentTypes
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from cmds.user_manager import check_user_exist
-from cmds.markup_manager import get_user_markup, custom_markup
-from cmds.pdf_manager import images_to_pdf, merge_pdfs
-from cmds import error_reporter
+from Utility.user_manager import check_user_exist
+from Utility.markup_manager import get_user_markup, custom_markup
+from Utility.pdf_manager import images_to_pdf, merge_pdfs
+from Utility import error_reporter
 from config import bot
 
 

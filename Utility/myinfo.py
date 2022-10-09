@@ -1,4 +1,4 @@
-from cmds.user_manager import check_admin, check_user_stage, get_manager_stage
+from Utility.user_manager import check_admin, check_user_stage, get_manager_stage
 
 stage_translate = {
 	"stage1": "مرحلة اولى",
