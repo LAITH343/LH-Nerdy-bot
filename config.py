@@ -7,7 +7,7 @@ cfg = configparser.ConfigParser()
 cfg.read("conf.ini")
 
 bot_token = cfg['default_data']['bot_token']
-bot_owner = cfg['default_data']['bot_owner']
+bot_owner = int(cfg['default_data']['bot_owner'])
 log_chat_id = cfg['default_data']['log_chat_id']
 errors_chat_id = cfg['default_data']['errors_chat_id']
 

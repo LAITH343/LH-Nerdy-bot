@@ -8,7 +8,7 @@ c.execute("CREATE TABLE IF NOT EXISTS ignore_list (id VARCHAR(100))")
 db.commit()
 c.execute(f"SELECT * FROM users_info where id='{str(bot_owner)}'")
 if c.fetchone() is None:
-    c.execute(f"INSERT INTO users_info VALUES ('{str(bot_owner)}', 'notset', 'notset', 'stage1', 'False', 'False', 'True')")
+    c.execute(f"INSERT INTO users_info VALUES ('{str(bot_owner)}', 'notset', 'notset', 'stage1', 'False', 'False', 'False')")
 db.commit()
 
 

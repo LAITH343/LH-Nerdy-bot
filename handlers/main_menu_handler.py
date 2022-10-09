@@ -2,11 +2,11 @@ from aiogram import types
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from Utility import error_reporter, user_manager
-from Utility.markup_manager import manager_markup, admin_markup, get_user_markup, custom_markup, books_markup, extra_file_markup
+from Utility.markup_manager import manager_markup, admin_markup, get_user_markup, custom_markup, books_markup, extra_file_markup, owner_markup
 from Utility.myinfo import myInfo
 from Utility.user_manager import check_admin, check_user_exist, get_manager_stage, check_user_stage
 from Utility.books_manager import get_files_list, get_extra_files_list
-from config import bot
+from config import bot, bot_owner
 
 
 class GetBook(StatesGroup):
@@ -148,6 +148,11 @@ async def cancel_message(message):
         await error_reporter.report(message, bot, "main - exit message handler", e)
 
 
+async def bot_owner_menu(message):
+    if message.from_user.id != bot_owner:
+        return await message.answer("ليس لديك الصلاحيات لعمل هذا الاجراء")
+    await message.answer("تم عرض صلاحيات المالك", reply_markup=owner_markup())
+
 def reg(dp):
     dp.register_message_handler(main_menu, text="الرجوع للقائمة الرئيسية 🏠")
     dp.register_message_handler(back_to_mainmenu, text="الرجوع للقائمة الرئيسية")
@@ -156,6 +161,7 @@ def reg(dp):
     dp.register_message_handler(cancel_handler, text="الغاء الادخال", state='*')
     dp.register_message_handler(View_manager_list, text="صلاحيات المشرف 💂")
     dp.register_message_handler(View_admin_list, text="صلاحيات الادمن 👮")
+    dp.register_message_handler(bot_owner_menu, text="صلاحيات مالك البوت")
     dp.register_message_handler(View_hw_menu, text="الواجبات 📃")
     dp.register_message_handler(tools_menu, text="الأدوات 🧰")
     dp.register_message_handler(Books_View, text="الكتب 📚")
