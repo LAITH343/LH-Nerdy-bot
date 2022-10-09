@@ -185,6 +185,8 @@ async def Add_book_get_file_name(message, state):
 async def Add_book_command(message, state):
     try:
         if document := message.document:
+            if document.file_size>50000000:
+                return await message.answer("لا يمكنك ارسال ملف حجمه اكبر من 50 ميكابايت\n يرجى المحاولة مرة اخرى مع ملف بحجم اقل من 50")
             await message.answer("جاري تنزيل الملف")
             await document.download(
                 destination_file=f"storage/books/{get_manager_stage(message.from_user.id)}/{document.file_name}",)
@@ -265,6 +267,8 @@ async def Add_extra_file_get_file_name(message, state):
 async def Add_extra_file_command(message, state):
     try:
         if document := message.document:
+            if document.file_size>50000000:
+                return await message.answer("لا يمكنك ارسال ملف حجمه اكبر من 50 ميكابايت\n يرجى المحاولة مرة اخرى مع ملف بحجم اقل من 50")
             await message.answer("جاري تنزيل الملف")
             await document.download(
                 destination_file=f"storage/extra/{get_manager_stage(message.from_user.id)}/{document.file_name}",)
